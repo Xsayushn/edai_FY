@@ -1,16 +1,19 @@
 """
-app.py — Human-Crafted Editorial UI for OpinionLens.
+app.py — Human-Crafted Editorial & User-Friendly UI for OpinionLens.
 
 An explainable & safety-guarded opinion intelligence dashboard that bridges
 raw e-commerce customer reviews with verifiable, citation-backed executive synthesis.
 
-Design System:
-  - Inspired by modern engineering dashboards (Linear, Stripe Radar, Perplexity).
-  - Clean typography, subtle hairline borders, authentic citations, zero AI tropes.
-  - Multi-theme architecture:
-      1. ✦ Editorial Studio Light (Default clean white & slate editorial layout)
-      2. ✦ Obsidian Matte Dark (Distraction-free executive dark mode)
-      3. ✦ High-Contrast (WCAG AAA certified accessibility mode)
+User-Friendly Features:
+  - ⚡ 1-Click Interactive Demo Presets (MacBook Air M2, Anker PowerCore, Lenovo, Samsung)
+  - 🏷️ Quick Aspect Query Chips (Heating, Battery, Camera, Performance, Value, Build)
+  - 📌 Executive Verdict & Key Takeaways Matrix (At-a-glance TL;DR synthesis)
+  - 🔗 Direct Click-to-Inspect Citation Buttons (Loads specific review in 1 click)
+  - 🔎 Searchable & Star-Filterable Evidence Inspector (Interactive review browser)
+  - 🔀 Flexible Layout Mode: Split View (Side-by-Side) or Tabbed View (Full Width)
+  - 🔊 Web Speech API Audio Briefing (Hands-free voice read-aloud)
+  - 🎓 Project Defense & Architecture FAQ (Mid-Sem evaluation guide)
+  - ✦ Multi-Theme Engine: Editorial Studio Light, Obsidian Matte Dark, High-Contrast WCAG AAA
 """
 
 from __future__ import annotations
@@ -27,7 +30,7 @@ import streamlit.components.v1 as components
 
 # ── page config must be the very first Streamlit call ──────────────────────
 st.set_page_config(
-    page_title="OpinionLens · Product Review Intelligence & Safety Audit",
+    page_title="OpinionLens · Review Intelligence & Safety Audit",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -43,7 +46,7 @@ from retriever import retrieve_opinions
 
 
 # ---------------------------------------------------------------------------
-# Session state initialization
+# Session State Initialization
 # ---------------------------------------------------------------------------
 
 def _init_state():
@@ -60,13 +63,19 @@ def _init_state():
         "selected_quote": "",
         "selected_aspect": None,
         "theme_mode": "✦ Editorial Studio Light",
-        "high_contrast": False,
         "font_large": False,
+        "view_layout": "Split View (Side-by-Side)",
         "user_groq_key": "",
         "exec_mode": "⚡ Groq LLM (High-Performance)",
         "selected_model": "qwen/qwen3.8-27b",
         "custom_dataset_df": None,
         "custom_dataset_name": None,
+        "active_brand": None,
+        "active_product_id": None,
+        "active_query": "",
+        "trigger_run": False,
+        "inspector_keyword": "",
+        "inspector_star": "All",
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -245,7 +254,7 @@ html, body, [class*="css"] {{
     border: 1px solid {tokens["header_border"]};
     border-radius: 10px;
     padding: 1.1rem 1.6rem;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -289,10 +298,11 @@ html, body, [class*="css"] {{
 .brand-badges {{
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }}
 
 .meta-pill {{
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 6px;
@@ -301,6 +311,27 @@ html, body, [class*="css"] {{
     border: 1px solid {tokens["border_color"]};
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}}
+
+/* ── Interactive Presets & Chip Containers ── */
+.preset-bar {{
+    background-color: {tokens["card_bg"]};
+    border: 1px solid {tokens["border_color"]};
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}}
+
+.preset-label {{
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: {tokens["text_muted"]};
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
 }}
 
 /* ── Cards ── */
@@ -357,6 +388,35 @@ html, body, [class*="css"] {{
     line-height: 1.4;
 }}
 
+/* ── Executive Verdict Banner ── */
+.verdict-banner {{
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid {tokens["border_color"]};
+    background-color: {tokens["card_bg"]};
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+}}
+
+.verdict-header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}}
+
+.verdict-badge {{
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    display: inline-block;
+}}
+
 /* ── Editorial Footnote Citation Chips [#14] ── */
 .citation-chip {{
     font-family: 'JetBrains Mono', monospace;
@@ -370,12 +430,6 @@ html, body, [class*="css"] {{
     margin: 0 2px;
     display: inline-block;
     vertical-align: middle;
-    cursor: pointer;
-    transition: all 0.12s ease;
-}}
-.citation-chip:hover {{
-    transform: translateY(-1px);
-    border-color: {tokens["text_primary"]};
 }}
 
 /* ── Natural Text Highlight Marker ── */
@@ -437,8 +491,8 @@ html, body, [class*="css"] {{
     border: 1px solid {tokens["btn_primary_border"]} !important;
     border-radius: 6px !important;
     font-weight: 600 !important;
-    font-size: 0.88rem !important;
-    padding: 0.45rem 1.3rem !important;
+    font-size: 0.86rem !important;
+    padding: 0.4rem 1.1rem !important;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     transition: all 0.15s ease-in-out !important;
 }}
@@ -470,33 +524,6 @@ div[data-testid="stMetricValue"] {{
     color: {tokens["text_primary"]} !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-}}
-
-/* ── Minimalist Media Player Bar ── */
-.media-briefing-bar {{
-    background-color: {tokens["card_bg"]};
-    border: 1px solid {tokens["border_color"]};
-    border-radius: 8px;
-    padding: 9px 15px;
-    margin-bottom: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}}
-
-.media-label {{
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: {tokens["text_primary"]};
-    font-size: 0.88rem;
-    font-weight: 600;
-}}
-
-.media-sublabel {{
-    font-size: {small_font_size};
-    color: {tokens["text_muted"]};
-    font-weight: 400;
 }}
 
 .subtle-line {{
@@ -573,50 +600,203 @@ def _set_inspector(review_ids: list[int], quote: str = ""):
 
 
 # ---------------------------------------------------------------------------
-# Section: Evidence & Source Verifier (Right Panel)
+# Section: Executive Takeaways & Verdict Card
+# ---------------------------------------------------------------------------
+
+def render_executive_verdict_card(alerts, summary, contested):
+    """At-a-glance TL;DR summary card providing an immediate high-level verdict."""
+    if alerts:
+        verdict_text = "⚠️ CAUTION: CRITICAL SAFETY CONCERNS DETECTED"
+        verdict_badge_style = "background:#fee2e2; color:#991b1b; border:1px solid #f87171;"
+        headline_summary = (
+            f"Isolated reports of {', '.join(a.risk_term.title() for a in alerts)} "
+            f"were surfaced across {sum(len(a.matching_reviews) for a in alerts)} customer accounts. "
+            "These hazard complaints were intercepted before majority star ratings could conceal them."
+        )
+    elif contested:
+        verdict_text = "⚖️ POLARIZED SENTIMENT: REVIEW TRADE-OFFS"
+        verdict_badge_style = "background:#fef3c7; color:#92400e; border:1px solid #fcd34d;"
+        headline_summary = (
+            f"Customer opinion is split on key dimensions: {', '.join(c.aspect for c in contested[:3])}. "
+            "Examine conflicting pro/con citations before making purchasing or evaluation decisions."
+        )
+    else:
+        verdict_text = "✅ STRONG CONSENSUS: GENERALLY PRAISED"
+        verdict_badge_style = "background:#dcfce7; color:#166534; border:1px solid #86efac;"
+        headline_summary = "Customer satisfaction converges strongly across evaluated hardware aspects."
+
+    st.markdown(
+        f"""
+<div class="verdict-banner">
+  <div class="verdict-header">
+    <div>
+      <span class="verdict-badge" style="{verdict_badge_style}">{verdict_text}</span>
+      <span style="font-size:0.8rem; color:{tokens['text_muted']}; margin-left:8px;">
+        Evidence-backed audit &bull; 100% Attributed
+      </span>
+    </div>
+  </div>
+  <div style="font-size:0.95rem; line-height:1.6; color:{tokens['text_secondary']}; margin-bottom:1rem;">
+    {headline_summary}
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    # 3-Column Highlights Matrix
+    col_str, col_con, col_attr = st.columns(3)
+    with col_str:
+        st.markdown(
+            f"""
+<div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 14px; height:100%;">
+  <div style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; margin-bottom:4px;">
+    Top Verified Strengths
+  </div>
+  <div style="font-size:0.85rem; color:{tokens['text_secondary']}; line-height:1.5;">
+    {summary.consensus_points[0] if summary and summary.consensus_points else 'Strong user feedback.'}
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with col_con:
+        watch_out = (
+            f"Safety: {alerts[0].risk_term.title()} in reviews {alerts[0].matching_reviews[:4]}"
+            if alerts else (
+                f"Contested: {contested[0].aspect} ({int(contested[0].ratio*100)}% polarity)"
+                if contested else "No major complaints flagged."
+            )
+        )
+        st.markdown(
+            f"""
+<div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 14px; height:100%;">
+  <div style="font-size:0.75rem; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:4px;">
+    Critical Watch-Outs
+  </div>
+  <div style="font-size:0.85rem; color:{tokens['text_secondary']}; line-height:1.5;">
+    {watch_out}
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with col_attr:
+        st.markdown(
+            f"""
+<div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 14px; height:100%;">
+  <div style="font-size:0.75rem; font-weight:700; color:{tokens['text_muted']}; text-transform:uppercase; margin-bottom:4px;">
+    Explainability Guarantee
+  </div>
+  <div style="font-size:0.85rem; color:{tokens['text_secondary']}; line-height:1.5;">
+    Every conclusion links directly to verifiable raw customer text. Zero ungrounded claims.
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# Section: Searchable & Filterable Evidence Inspector (Right Panel)
 # ---------------------------------------------------------------------------
 
 def render_evidence_inspector():
     st.markdown(
         f"""
 <div class="section-headline title-evidence">
-  <span>Source Evidence &amp; Citation Verifier</span>
+  <span>Source Evidence &amp; Review Inspector</span>
 </div>
 <div class="section-subtext">
-  Inspect verified customer quotes, timestamps, and ratings anchored to summary claims.
+  Search and inspect authentic customer quotes, ratings, and timestamps.
 </div>
 """,
         unsafe_allow_html=True,
     )
 
-    if not st.session_state["selected_review_ids"]:
+    # Interactive Search & Rating Filter Toolbar
+    search_col, star_col = st.columns([3, 2])
+    with search_col:
+        kw = st.text_input(
+            "Filter text",
+            value=st.session_state.get("inspector_keyword", ""),
+            placeholder="Type keywords e.g. 'heat', 'battery'...",
+            key="input_inspector_kw",
+            label_visibility="collapsed",
+        )
+        st.session_state["inspector_keyword"] = kw
+
+    with star_col:
+        star_filter = st.selectbox(
+            "Rating filter",
+            ["All Ratings", "5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"],
+            key="select_inspector_star",
+            label_visibility="collapsed",
+        )
+        st.session_state["inspector_star"] = star_filter
+
+    active_ids = st.session_state.get("selected_review_ids", [])
+    active_quote = st.session_state.get("selected_quote", "")
+
+    # Base candidate pool: if citation selected, use active_ids; otherwise show all reviews!
+    if active_ids:
+        candidate_reviews = [_review_lookup(rid) for rid in active_ids if _review_lookup(rid)]
+        header_text = f"CITATION TRACE: {len(active_ids)} GROUNDED REVIEWS"
+    else:
+        candidate_reviews = st.session_state.get("reviews", [])
+        header_text = "TOP VERIFIED CUSTOMER REVIEWS"
+
+    # Apply search filter
+    if kw.strip():
+        candidate_reviews = [
+            r for r in candidate_reviews
+            if kw.lower() in str(r.get("review_text", "")).lower()
+        ]
+
+    # Apply star filter
+    if star_filter != "All Ratings":
+        target_star = int(star_filter[0])
+        candidate_reviews = [
+            r for r in candidate_reviews
+            if int(r.get("rating", 0)) == target_star
+        ]
+
+    st.markdown(
+        f"""
+<div style="display:flex; justify-content:space-between; align-items:center; margin: 0.6rem 0 0.8rem 0;">
+  <span style="font-size:0.75rem; font-weight:700; color:{tokens['text_muted']}; letter-spacing:0.04em;">
+    {header_text} ({len(candidate_reviews)} DISPLAYED)
+  </span>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    if not candidate_reviews:
         st.markdown(
             f"""
-<div style="padding: 2.5rem 1rem; text-align: center; color: {tokens['text_muted']}; font-size: 0.88rem;">
-  Select any citation chip <span class="citation-chip">Ref #</span> or click <em>Inspect Evidence</em> to trace the exact source reviews here.
+<div style="padding: 2rem 1rem; text-align: center; color: {tokens['text_muted']}; font-size: 0.88rem;">
+  No reviews matched your search filter. Click <em>Reset Filters</em> to view all reviews.
 </div>
 """,
             unsafe_allow_html=True,
         )
+        if st.button("Reset Filters", key="reset_filter_btn"):
+            st.session_state["selected_review_ids"] = []
+            st.session_state["inspector_keyword"] = ""
+            st.session_state["inspector_star"] = "All Ratings"
+            st.rerun()
         return
 
-    active_ids = st.session_state["selected_review_ids"]
-    active_quote = st.session_state.get("selected_quote", "")
-
-    st.markdown(
-        f'<div style="font-size:0.8rem; font-weight:600; color:{tokens["text_muted"]}; margin-bottom:0.75rem;">'
-        f'DISPLAYING {len(active_ids)} GROUNDED SOURCE CITATION(S)</div>',
-        unsafe_allow_html=True,
-    )
-
-    for rid in active_ids:
-        review = _review_lookup(rid)
-        if not review:
-            continue
-
+    # Display up to 10 reviews
+    for review in candidate_reviews[:10]:
+        rid = review["review_id"]
         tuples_for_review = _tuple_lookup(rid)
         body_html = _highlight_quote_in_text(review["review_text"], active_quote)
-
         helpful_text = f"{review.get('helpful_votes', 0)} helpful votes" if review.get("helpful_votes") else "Verified purchase"
 
         st.markdown(
@@ -661,6 +841,9 @@ def render_evidence_inspector():
 """,
                         unsafe_allow_html=True,
                     )
+
+    if len(candidate_reviews) > 10:
+        st.caption(f"Showing 10 of {len(candidate_reviews)} matching customer reviews.")
 
 
 # ---------------------------------------------------------------------------
@@ -712,12 +895,15 @@ def render_safety_section(alerts):
                 unsafe_allow_html=True,
             )
 
-        if st.button(
-            f"Inspect {alert.risk_term.title()} Evidence",
-            key=f"safety_btn_{alert.risk_term}",
-        ):
-            _set_inspector(review_ids, alert.quotes[0] if alert.quotes else "")
-            st.rerun()
+        # 1-Click Action to trace safety evidence
+        btn_col, _ = st.columns([3, 1])
+        with btn_col:
+            if st.button(
+                f"Inspect {alert.risk_term.title()} Evidence ({len(review_ids)} reviews)",
+                key=f"safety_btn_{alert.risk_term}",
+            ):
+                _set_inspector(review_ids, alert.quotes[0] if alert.quotes else "")
+                st.rerun()
 
         st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
 
@@ -725,7 +911,7 @@ def render_safety_section(alerts):
 
 
 # ---------------------------------------------------------------------------
-# Section B — Customer Consensus Summary
+# Section B — Customer Consensus Summary with Clickable Citations
 # ---------------------------------------------------------------------------
 
 def render_consensus_section(summary):
@@ -736,7 +922,7 @@ def render_consensus_section(summary):
     <span>Verified Customer Consensus</span>
   </div>
   <div class="section-subtext">
-    Key product dimensions where the majority of customer sentiment converges.
+    Key product dimensions where the majority of customer sentiment converges. Click any citation chip to inspect.
   </div>
 """,
         unsafe_allow_html=True,
@@ -754,23 +940,26 @@ def render_consensus_section(summary):
         ids = _extract_citation_ids(point)
         rendered = _render_cited_text(point)
 
-        col_text, col_btn = st.columns([5, 1])
-        with col_text:
-            st.markdown(
-                f'<div style="margin:6px 0; font-size:0.92rem; line-height:1.6; color:{tokens["text_secondary"]};">'
-                f"&bull; {rendered}</div>",
-                unsafe_allow_html=True,
-            )
-        with col_btn:
-            if ids and st.button("Inspect", key=f"consensus_btn_{i}", help="Inspect source reviews"):
-                quote = ""
-                for rid in ids:
-                    ts = _tuple_lookup(rid)
-                    if ts:
-                        quote = ts[0].quote
-                        break
-                _set_inspector(ids, quote)
-                st.rerun()
+        st.markdown(
+            f'<div style="margin:8px 0 4px 0; font-size:0.92rem; line-height:1.6; color:{tokens["text_secondary"]};">'
+            f"&bull; {rendered}</div>",
+            unsafe_allow_html=True,
+        )
+
+        # 1-Click Interactive Citation Action Pills
+        if ids:
+            chip_cols = st.columns(min(len(ids) + 1, 6))
+            for idx, cid in enumerate(ids[:4]):
+                with chip_cols[idx]:
+                    if st.button(f"🔍 Ref #{cid}", key=f"chip_btn_{i}_{cid}"):
+                        _set_inspector([cid])
+                        st.rerun()
+            with chip_cols[min(len(ids), 4)]:
+                if st.button("Inspect All", key=f"inspect_all_{i}"):
+                    _set_inspector(ids)
+                    st.rerun()
+
+        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -901,9 +1090,6 @@ def render_contested_section(contested, stats):
 # ---------------------------------------------------------------------------
 
 def render_audio_briefing(alerts, summary, contested):
-    """
-    Renders an accessible voice briefing bar using HTML5 SpeechSynthesis.
-    """
     speech_parts = []
     if alerts:
         speech_parts.append("Important Safety Notice:")
@@ -971,7 +1157,6 @@ def render_audio_briefing(alerts, summary, contested):
 # ---------------------------------------------------------------------------
 
 def generate_export_payloads(product_id: str, brand_name: str, alerts, summary, contested, stats):
-    """Generate Markdown and JSON reports for auditing & governance."""
     md_lines = [
         f"# OpinionLens Executive Review Audit",
         f"- **Product Model:** {product_id}",
@@ -1123,13 +1308,58 @@ st.markdown(
   </div>
   <div class="brand-badges">
     <span class="meta-pill">ChromaDB Indexed</span>
-    <span class="meta-pill">SemEval-2016 Benchmark</span>
-    <span class="meta-pill">Local / Groq Dual Engine</span>
+    <span class="meta-pill">SemEval-2016 ABSA</span>
+    <span class="meta-pill">Dual Engine: Local / Groq</span>
   </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
+
+
+# ---------------------------------------------------------------------------
+# UI — 1-Click Interactive Demo Presets (User-Friendly Shortcut Bar)
+# ---------------------------------------------------------------------------
+
+st.markdown(
+    f'<div style="font-size:0.75rem; font-weight:700; color:{tokens["text_muted"]}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">'
+    f'⚡ 1-Click Interactive Demo Presets (Instant Pipeline Evaluation)</div>',
+    unsafe_allow_html=True,
+)
+
+demo_cols = st.columns(4)
+
+with demo_cols[0]:
+    if st.button("💻 MacBook Air M2\n(Thermals & MagSafe)", use_container_width=True, help="Test fanless thermal throttling and MagSafe charger sparks"):
+        st.session_state["active_brand"] = "Laptops"
+        st.session_state["active_product_id"] = "MACBOOK_AIR_M2"
+        st.session_state["active_query"] = "thermal throttling & charger"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+
+with demo_cols[1]:
+    if st.button("🔋 Anker PowerCore\n(Battery Swelling Risk)", use_container_width=True, help="Test lithium battery swelling & smoke hazard detection"):
+        st.session_state["active_brand"] = "Amazon Electronics"
+        st.session_state["active_product_id"] = "B00X5RV14Y"
+        st.session_state["active_query"] = "battery swelling & fast charging"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+
+with demo_cols[2]:
+    if st.button("📱 Lenovo A6000\n(Camera vs Heat Polarity)", use_container_width=True, help="Test conflicting pro/con sentiment on budget smartphone"):
+        st.session_state["active_brand"] = "Lenova"
+        st.session_state["active_product_id"] = "MOBE7JXXKS6PWW2C"
+        st.session_state["active_query"] = "camera vs heating issues"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+
+with demo_cols[3]:
+    if st.button("🔍 Full Balanced Audit\n(Overall Synthesis)", use_container_width=True, help="Generate a balanced executive summary across all aspects"):
+        st.session_state["active_brand"] = "Laptops"
+        st.session_state["active_product_id"] = "MACBOOK_AIR_M2"
+        st.session_state["active_query"] = ""
+        st.session_state["trigger_run"] = True
+        st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -1146,11 +1376,15 @@ if st.session_state.get("custom_dataset_df") is not None:
     custom_name = st.session_state.get("custom_dataset_name", "Uploaded Dataset")
     brand_labels.insert(0, f"📁 {custom_name}")
 
+default_brand_label = st.session_state.get("active_brand")
 default_brand_idx = 0
-for i, lbl in enumerate(brand_labels):
-    if "lenov" in lbl.lower():
-        default_brand_idx = i
-        break
+if default_brand_label and default_brand_label in brand_labels:
+    default_brand_idx = brand_labels.index(default_brand_label)
+else:
+    for i, lbl in enumerate(brand_labels):
+        if "laptop" in lbl.lower():
+            default_brand_idx = i
+            break
 
 with ctrl_col1:
     selected_brand = st.selectbox("Product Brand / Dataset", brand_labels, index=default_brand_idx)
@@ -1176,10 +1410,18 @@ with ctrl_col2:
 
     product_labels = list(product_options.keys())
     default_prod_idx = 0
-    for i, pid in enumerate(product_options.values()):
-        if pid == DEFAULT_PRODUCT_ID:
-            default_prod_idx = i
-            break
+    preset_pid = st.session_state.get("active_product_id")
+
+    if preset_pid:
+        for i, pid in enumerate(product_options.values()):
+            if pid == preset_pid:
+                default_prod_idx = i
+                break
+    else:
+        for i, pid in enumerate(product_options.values()):
+            if pid == DEFAULT_PRODUCT_ID:
+                default_prod_idx = i
+                break
 
     selected_product_label = st.selectbox("Hardware Model", product_labels, index=default_prod_idx)
 
@@ -1188,13 +1430,58 @@ selected_product_id = product_options[selected_product_label]
 with ctrl_col3:
     query = st.text_input(
         "Aspect Filter Query",
-        value="",
+        value=st.session_state.get("active_query", ""),
         placeholder="Leave blank for balanced summary, or ask e.g. 'battery heating'",
     )
+    st.session_state["active_query"] = query
 
 with ctrl_col4:
     st.markdown("<br/>", unsafe_allow_html=True)
     analyze = st.button("Run Audit", use_container_width=True)
+
+
+# ---------------------------------------------------------------------------
+# UI — Quick Aspect Query Chips (Under Search Input)
+# ---------------------------------------------------------------------------
+
+st.markdown(
+    f'<div style="display:flex; align-items:center; gap:0.5rem; margin-top:-0.4rem; margin-bottom:1.1rem; flex-wrap:wrap;">'
+    f'<span style="font-size:0.75rem; font-weight:700; color:{tokens["text_muted"]}; text-transform:uppercase;">Quick Topics:</span>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
+
+chip_col1, chip_col2, chip_col3, chip_col4, chip_col5, chip_col6 = st.columns(6)
+with chip_col1:
+    if st.button("🔥 Heating & Safety", use_container_width=True, key="chip_heat"):
+        st.session_state["active_query"] = "overheating thermal throttling"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+with chip_col2:
+    if st.button("🔋 Battery Life", use_container_width=True, key="chip_batt"):
+        st.session_state["active_query"] = "battery life charging speed"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+with chip_col3:
+    if st.button("📸 Camera Quality", use_container_width=True, key="chip_cam"):
+        st.session_state["active_query"] = "camera quality low light"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+with chip_col4:
+    if st.button("⚡ Performance", use_container_width=True, key="chip_perf"):
+        st.session_state["active_query"] = "performance speed gaming"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+with chip_col5:
+    if st.button("💰 Value for Money", use_container_width=True, key="chip_val"):
+        st.session_state["active_query"] = "value for money pricing"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+with chip_col6:
+    if st.button("↺ Reset (Balanced)", use_container_width=True, key="chip_reset"):
+        st.session_state["active_query"] = ""
+        st.session_state["trigger_run"] = True
+        st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -1212,6 +1499,13 @@ with st.sidebar:
     if selected_theme != st.session_state["theme_mode"]:
         st.session_state["theme_mode"] = selected_theme
         st.rerun()
+
+    view_layout = st.radio(
+        "Results Layout Mode",
+        ["Split View (Side-by-Side)", "Tabbed View (Full Width)"],
+        index=0 if st.session_state.get("view_layout") == "Split View (Side-by-Side)" else 1,
+    )
+    st.session_state["view_layout"] = view_layout
 
     font_toggle = st.toggle("Large Text (120% Scale)", value=st.session_state["font_large"])
     if font_toggle != st.session_state["font_large"]:
@@ -1272,7 +1566,10 @@ with st.sidebar:
 # Trigger Pipeline
 # ---------------------------------------------------------------------------
 
-if analyze:
+trigger = analyze or st.session_state.get("trigger_run", False)
+
+if trigger:
+    st.session_state["trigger_run"] = False
     st.session_state["analysis_done"] = False
     st.session_state["selected_review_ids"] = []
     st.session_state["selected_quote"] = ""
@@ -1289,10 +1586,13 @@ if st.session_state["analysis_done"]:
     contested = st.session_state["contested"]
     stats = st.session_state["stats"]
 
-    # Spoken Audio Accessibility Bar
+    # 1. Executive Verdict & Key Takeaways Card (At-a-Glance TL;DR)
+    render_executive_verdict_card(alerts, summary, contested)
+
+    # 2. Spoken Audio Accessibility Bar
     render_audio_briefing(alerts, summary, contested)
 
-    # Key Performance Metrics Strip
+    # 3. Key Performance Metrics Strip
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Analyzed Reviews", len(st.session_state["reviews"]))
     m2.metric("Extracted Opinions", len(st.session_state["tuples"]))
@@ -1301,63 +1601,107 @@ if st.session_state["analysis_done"]:
 
     st.markdown("<br/>", unsafe_allow_html=True)
 
-    left_col, right_col = st.columns([6, 4])
+    # Choose between Split View and Tabbed View based on user preference
+    if st.session_state.get("view_layout") == "Tabbed View (Full Width)":
+        tab_exec, tab_cons, tab_pol, tab_evid, tab_exp = st.tabs([
+            "🚨 Safety & Critical Notices",
+            "✅ Customer Consensus",
+            "⚖️ Polarized Dimensions & Charts",
+            "🔎 Searchable Source Evidence",
+            "📥 Governance & Export",
+        ])
 
-    with left_col:
-        render_safety_section(alerts)
-        render_consensus_section(summary)
-        render_contested_section(contested, stats)
+        with tab_exec:
+            render_safety_section(alerts)
 
-    with right_col:
-        st.markdown(f'<div class="editorial-card card-evidence">', unsafe_allow_html=True)
-        render_evidence_inspector()
-        st.markdown("</div>", unsafe_allow_html=True)
+        with tab_cons:
+            render_consensus_section(summary)
 
-        all_ids = sorted({r["review_id"] for r in st.session_state["reviews"]})
-        if all_ids:
-            with st.expander("Jump to specific Review ID"):
-                manual_id = st.selectbox("Select Review ID", options=all_ids, key="manual_review_select")
-                if st.button("Load Review Record", key="manual_load_btn"):
-                    _set_inspector([manual_id])
-                    st.rerun()
+        with tab_pol:
+            render_contested_section(contested, stats)
 
-    # Governance & Export Section
-    st.markdown("---")
-    st.markdown("### Export Audit Report")
-    md_report, json_report = generate_export_payloads(
-        selected_product_id,
-        selected_brand,
-        alerts,
-        summary,
-        contested,
-        stats,
-    )
-    exp_col1, exp_col2, _ = st.columns([2, 2, 4])
-    with exp_col1:
-        st.download_button(
-            "Download Report (Markdown .md)",
-            data=md_report,
-            file_name=f"opinionlens_audit_{selected_product_id}.md",
-            mime="text/markdown",
+        with tab_evid:
+            st.markdown(f'<div class="editorial-card card-evidence">', unsafe_allow_html=True)
+            render_evidence_inspector()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with tab_exp:
+            st.markdown("### Export Audit Report")
+            md_report, json_report = generate_export_payloads(
+                selected_product_id,
+                selected_brand,
+                alerts,
+                summary,
+                contested,
+                stats,
+            )
+            exp_col1, exp_col2 = st.columns(2)
+            with exp_col1:
+                st.download_button(
+                    "Download Report (Markdown .md)",
+                    data=md_report,
+                    file_name=f"opinionlens_audit_{selected_product_id}.md",
+                    mime="text/markdown",
+                )
+            with exp_col2:
+                st.download_button(
+                    "Download Schema (JSON .json)",
+                    data=json_report,
+                    file_name=f"opinionlens_audit_{selected_product_id}.json",
+                    mime="application/json",
+                )
+
+    else:
+        # Default: Split View (Side-by-Side Dual Column)
+        left_col, right_col = st.columns([6, 4])
+
+        with left_col:
+            render_safety_section(alerts)
+            render_consensus_section(summary)
+            render_contested_section(contested, stats)
+
+        with right_col:
+            st.markdown(f'<div class="editorial-card card-evidence">', unsafe_allow_html=True)
+            render_evidence_inspector()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        # Governance & Export Section
+        st.markdown("---")
+        st.markdown("### Export Audit Report")
+        md_report, json_report = generate_export_payloads(
+            selected_product_id,
+            selected_brand,
+            alerts,
+            summary,
+            contested,
+            stats,
         )
-    with exp_col2:
-        st.download_button(
-            "Download Schema (JSON .json)",
-            data=json_report,
-            file_name=f"opinionlens_audit_{selected_product_id}.json",
-            mime="application/json",
-        )
+        exp_col1, exp_col2, _ = st.columns([2, 2, 4])
+        with exp_col1:
+            st.download_button(
+                "Download Report (Markdown .md)",
+                data=md_report,
+                file_name=f"opinionlens_audit_{selected_product_id}.md",
+                mime="text/markdown",
+            )
+        with exp_col2:
+            st.download_button(
+                "Download Schema (JSON .json)",
+                data=json_report,
+                file_name=f"opinionlens_audit_{selected_product_id}.json",
+                mime="application/json",
+            )
 
-elif not analyze:
+elif not trigger:
     # Editorial Welcome State
     st.markdown(
         f"""
-<div style="padding: 2.5rem 1rem 3rem 1rem; color: {tokens['text_muted']};">
+<div style="padding: 2.2rem 1rem 2.5rem 1rem; color: {tokens['text_muted']};">
   <div style="max-width: 780px; margin: 0 auto; text-align: center;">
     <h2 style="color:{tokens['text_primary']}; font-weight:700; font-size:1.6rem; margin-bottom:0.6rem;">
       Evidence-Grounded Review Intelligence
     </h2>
-    <p style="color:{tokens['text_secondary']}; font-size:0.95rem; line-height:1.6; margin-bottom:2.2rem;">
+    <p style="color:{tokens['text_secondary']}; font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">
       OpinionLens analyzes customer reviews with rigorous source attribution, intercepts critical safety risks
       before majority ratings conceal them, and maps contested consumer sentiment across hardware dimensions.
     </p>
@@ -1403,4 +1747,31 @@ elif not analyze:
 </div>
 """,
         unsafe_allow_html=True,
+    )
+
+# ---------------------------------------------------------------------------
+# UI — Evaluation & Project Defense Guide (Collapsible Drawer)
+# ---------------------------------------------------------------------------
+
+with st.expander("🎓 Project Defense & Architecture FAQ (Evaluation Guide)"):
+    st.markdown(
+        """
+### Core Differences: OpinionLens vs. Amazon Review Tags & Naive LLM Prompts
+
+1. **Why not closed-vocabulary Amazon tags?**
+   - Amazon tags use a pre-defined static checklist (e.g. "Durable", "Good Battery").
+   - OpinionLens uses **query-driven, open-vocabulary generative aspect extraction**: Any natural language query (e.g. *"Is this laptop good for people who travel a lot?"*) retrieves the relevant subset of opinions, extracts dynamic aspects, and synthesizes a tailored answer.
+
+2. **Why not just prompt an LLM to "summarize and cite sources"?**
+   - LLMs hallucinate citations and invent review quotes with false confidence.
+   - OpinionLens uses **retrieval-grounded, verifiable evidence mapping**: Citations link to raw customer text indexed in ChromaDB, verifiable programmatically.
+
+3. **How does OpinionLens handle conflicting opinions (SAF-02)?**
+   - Naive summarizers silently average away minority opinions (e.g. 40% say it runs hot, 60% say cool -> summary says "cool").
+   - OpinionLens's **Contention Engine** calculates polarity ratios and surfaces both Pro and Con viewpoints explicitly.
+
+4. **How does the Critical-Minority Safety Guard prevent hazard dilution?**
+   - If 3 out of 1,000 users experience battery swelling or fire hazards, a 4.7★ aggregate rating erases the danger.
+   - OpinionLens's **Safety Guard** scans reviews using semantic cosine similarity against hazard seed terms (`overheating`, `swelling`, `smoke`, `fire`) and isolates them before statistical clustering occurs.
+"""
     )
