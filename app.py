@@ -854,26 +854,26 @@ def render_safety_section(alerts):
     if not alerts:
         return
 
-    st.markdown(
-        f"""
-<div class="editorial-card card-safety">
-  <div class="section-headline title-safety">
-    <span>Critical Product &amp; Safety Notices</span>
-  </div>
-  <div class="section-subtext">
-    Isolated consumer hazard reports flagged before statistical aggregation to prevent dilution.
-  </div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    for alert in alerts:
-        review_ids = alert.matching_reviews
-        id_str = ", ".join(f"#{r}" for r in review_ids[:6])
-        more = f" +{len(review_ids)-6} more" if len(review_ids) > 6 else ""
-
+    with st.container(border=True):
         st.markdown(
             f"""
+<div class="section-headline title-safety">
+  <span>Critical Product &amp; Safety Notices</span>
+</div>
+<div class="section-subtext">
+  Isolated consumer hazard reports flagged before statistical aggregation to prevent dilution.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        for alert in alerts:
+            review_ids = alert.matching_reviews
+            id_str = ", ".join(f"#{r}" for r in review_ids[:6])
+            more = f" +{len(review_ids)-6} more" if len(review_ids) > 6 else ""
+
+            st.markdown(
+                f"""
 <div style="margin: 0.5rem 0;">
   <span style="font-size:0.75rem; font-weight:700; background:#e11d48; color:white; padding:2px 8px; border-radius:4px; margin-right:6px;">
     HAZARD REPORT
@@ -886,28 +886,26 @@ def render_safety_section(alerts):
   </span>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
-
-        for q in alert.quotes[:2]:
-            st.markdown(
-                f'<div class="quote-marker">"{q[:160]}"</div>',
                 unsafe_allow_html=True,
             )
 
-        # 1-Click Action to trace safety evidence
-        btn_col, _ = st.columns([3, 1])
-        with btn_col:
-            if st.button(
-                f"Inspect {alert.risk_term.title()} Evidence ({len(review_ids)} reviews)",
-                key=f"safety_btn_{alert.risk_term}",
-            ):
-                _set_inspector(review_ids, alert.quotes[0] if alert.quotes else "")
-                st.rerun()
+            for q in alert.quotes[:2]:
+                st.markdown(
+                    f'<div class="quote-marker">"{q[:160]}"</div>',
+                    unsafe_allow_html=True,
+                )
 
-        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
+            # 1-Click Action to trace safety evidence
+            btn_col, _ = st.columns([3, 1])
+            with btn_col:
+                if st.button(
+                    f"Inspect {alert.risk_term.title()} Evidence ({len(review_ids)} reviews)",
+                    key=f"safety_btn_{alert.risk_term}",
+                ):
+                    _set_inspector(review_ids, alert.quotes[0] if alert.quotes else "")
+                    st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -915,174 +913,181 @@ def render_safety_section(alerts):
 # ---------------------------------------------------------------------------
 
 def render_consensus_section(summary):
-    st.markdown(
-        f"""
-<div class="editorial-card card-consensus">
-  <div class="section-headline title-consensus">
-    <span>Verified Customer Consensus</span>
-  </div>
-  <div class="section-subtext">
-    Key product dimensions where the majority of customer sentiment converges. Click any citation chip to inspect.
-  </div>
-""",
-        unsafe_allow_html=True,
-    )
-
     if not summary or not summary.consensus_points:
-        st.markdown(
-            f'<p style="color:{tokens["text_muted"]}; font-style:italic;">No consensus generated.</p>',
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    for i, point in enumerate(summary.consensus_points):
-        ids = _extract_citation_ids(point)
-        rendered = _render_cited_text(point)
-
-        st.markdown(
-            f'<div style="margin:8px 0 4px 0; font-size:0.92rem; line-height:1.6; color:{tokens["text_secondary"]};">'
-            f"&bull; {rendered}</div>",
-            unsafe_allow_html=True,
-        )
-
-        # 1-Click Interactive Citation Action Pills
-        if ids:
-            chip_cols = st.columns(min(len(ids) + 1, 6))
-            for idx, cid in enumerate(ids[:4]):
-                with chip_cols[idx]:
-                    if st.button(f"🔍 Ref #{cid}", key=f"chip_btn_{i}_{cid}"):
-                        _set_inspector([cid])
-                        st.rerun()
-            with chip_cols[min(len(ids), 4)]:
-                if st.button("Inspect All", key=f"inspect_all_{i}"):
-                    _set_inspector(ids)
-                    st.rerun()
-
-        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# Section C — Contested Dimensions & Polarized Feedback
-# ---------------------------------------------------------------------------
-
-def render_contested_section(contested, stats):
-    st.markdown(
-        f"""
-<div class="editorial-card card-contested">
-  <div class="section-headline title-contested">
-    <span>Contested Dimensions &amp; Polarized Feedback</span>
-  </div>
-  <div class="section-subtext">
-    Aspects where customer opinions split into conflicting positive and negative camps.
-  </div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    if not contested:
-        st.markdown(
-            f'<p style="color:{tokens["text_muted"]}; font-style:italic;">No statistically polarized aspects detected for this product.</p>',
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
-
-    # Clean Aspect Distribution Chart
-    if stats:
-        aspects = [s["aspect"] for s in stats[:10]]
-        pos_vals = [s["positive"] for s in stats[:10]]
-        neg_vals = [s["negative"] for s in stats[:10]]
-
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            name="Positive",
-            y=aspects,
-            x=pos_vals,
-            orientation="h",
-            marker_color="#10b981",
-            opacity=0.9,
-        ))
-        fig.add_trace(go.Bar(
-            name="Negative",
-            y=aspects,
-            x=[-v for v in neg_vals],
-            orientation="h",
-            marker_color="#f43f5e",
-            opacity=0.9,
-        ))
-        fig.update_layout(
-            barmode="overlay",
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color=tokens["chart_font"], size=11, family="Inter"),
-            xaxis=dict(
-                showgrid=False,
-                zeroline=True,
-                zerolinecolor=tokens["chart_zero"],
-                tickfont=dict(color=tokens["chart_font"]),
-                title="Negative vs. Positive Mentions",
-            ),
-            yaxis=dict(showgrid=False),
-            legend=dict(
-                orientation="h",
-                x=0, y=1.12,
-                font=dict(size=11),
-            ),
-            margin=dict(l=10, r=10, t=10, b=10),
-            height=max(180, len(aspects) * 28),
-        )
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    # Contested Aspect Detail Cards
-    for c in contested:
-        ratio_pct = int(c.ratio * 100)
+    with st.container(border=True):
         st.markdown(
             f"""
-<div style="margin: 0.8rem 0 0.35rem 0; display:flex; justify-content:space-between; align-items:center;">
-  <div>
-    <strong style="color:{tokens['text_primary']}; font-size:0.95rem;">{c.aspect}</strong>
-    <span style="color:{tokens['text_muted']}; font-size:0.82rem; margin-left:6px;">
-      ({c.pos_count} positive &bull; {c.neg_count} negative)
-    </span>
-  </div>
-  <span style="font-size:0.75rem; font-weight:700; background:{tokens['tag_bg']}; color:{tokens['tag_text']}; padding:2px 8px; border-radius:4px; border:1px solid {tokens['border_color']};">
-    Polarity Index: {ratio_pct}%
-  </span>
+<div class="section-headline title-consensus">
+  <span>Verified Customer Consensus</span>
+</div>
+<div class="section-subtext">
+  Key product dimensions where the majority of customer sentiment converges. Click any citation chip to inspect.
 </div>
 """,
             unsafe_allow_html=True,
         )
 
-        col_pro, col_con = st.columns(2)
-        with col_pro:
+        for i, point in enumerate(summary.consensus_points):
+            ids = _extract_citation_ids(point)
+            rendered = _render_cited_text(point)
+
             st.markdown(
-                '<div style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; margin-bottom:2px;">Pro Mentions</div>',
+                f'<div style="margin:8px 0 4px 0; font-size:0.92rem; line-height:1.6; color:{tokens["text_secondary"]};">'
+                f"&bull; {rendered}</div>",
                 unsafe_allow_html=True,
             )
-            for t in c.pro_citations[:2]:
-                rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
-                st.markdown(
-                    f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
-                    unsafe_allow_html=True,
-                )
-        with col_con:
+
+            # 1-Click Interactive Citation Action Pills
+            if ids:
+                chip_cols = st.columns(min(len(ids) + 1, 6))
+                for idx, cid in enumerate(ids[:4]):
+                    with chip_cols[idx]:
+                        if st.button(f"🔍 Ref #{cid}", key=f"chip_btn_{i}_{cid}"):
+                            _set_inspector([cid])
+                            st.rerun()
+                with chip_cols[min(len(ids), 4)]:
+                    if st.button("Inspect All", key=f"inspect_all_{i}"):
+                        _set_inspector(ids)
+                        st.rerun()
+
+            st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# Section C — Aspect Sentiment & Contested Dimensions
+# ---------------------------------------------------------------------------
+
+def render_contested_section(contested, stats):
+    if not contested and not stats:
+        return
+
+    with st.container(border=True):
+        st.markdown(
+            f"""
+<div class="section-headline title-contested">
+  <span>Aspect Sentiment &amp; Contested Feedback</span>
+</div>
+<div class="section-subtext">
+  Aspect-level sentiment distribution across customer reviews. Highlights areas of consensus vs. polarized user feedback.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        # Clean Aspect Distribution Chart
+        if stats:
+            aspects = [s["aspect"] for s in stats[:10]]
+            pos_vals = [s["positive"] for s in stats[:10]]
+            neg_vals = [s["negative"] for s in stats[:10]]
+
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                name="Positive",
+                y=aspects,
+                x=pos_vals,
+                orientation="h",
+                marker_color="#10b981",
+                opacity=0.9,
+            ))
+            fig.add_trace(go.Bar(
+                name="Negative",
+                y=aspects,
+                x=[-v for v in neg_vals],
+                orientation="h",
+                marker_color="#f43f5e",
+                opacity=0.9,
+            ))
+            fig.update_layout(
+                barmode="overlay",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color=tokens["chart_font"], size=11, family="Inter"),
+                xaxis=dict(
+                    showgrid=False,
+                    zeroline=True,
+                    zerolinecolor=tokens["chart_zero"],
+                    tickfont=dict(color=tokens["chart_font"]),
+                    title="Negative vs. Positive Mentions",
+                ),
+                yaxis=dict(showgrid=False),
+                legend=dict(
+                    orientation="h",
+                    x=0, y=1.12,
+                    font=dict(size=11),
+                ),
+                margin=dict(l=10, r=10, t=10, b=10),
+                height=max(180, len(aspects) * 28),
+            )
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+        # Contested Aspect Detail Cards
+        if contested:
             st.markdown(
-                '<div style="font-size:0.75rem; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:2px;">Con Mentions</div>',
+                f'<div style="font-size:0.78rem; font-weight:700; color:{tokens["text_muted"]}; text-transform:uppercase; margin:0.8rem 0 0.4rem 0;">'
+                f'Polarized Dimensions ({len(contested)} Detected)</div>',
                 unsafe_allow_html=True,
             )
-            for t in c.con_citations[:2]:
-                rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
+            for c in contested:
+                ratio_pct = int(c.ratio * 100)
                 st.markdown(
-                    f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
+                    f"""
+<div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 14px; margin: 0.6rem 0;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <div>
+      <strong style="color:{tokens['text_primary']}; font-size:0.95rem;">{c.aspect}</strong>
+      <span style="color:{tokens['text_muted']}; font-size:0.82rem; margin-left:6px;">
+        ({c.pos_count} positive &bull; {c.neg_count} negative)
+      </span>
+    </div>
+    <span style="font-size:0.75rem; font-weight:700; background:{tokens['tag_bg']}; color:{tokens['tag_text']}; padding:2px 8px; border-radius:4px; border:1px solid {tokens['border_color']};">
+      Polarity Index: {ratio_pct}%
+    </span>
+  </div>
+</div>
+""",
                     unsafe_allow_html=True,
                 )
 
-        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
+                col_pro, col_con = st.columns(2)
+                with col_pro:
+                    st.markdown(
+                        '<div style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; margin-bottom:2px;">Pro Mentions</div>',
+                        unsafe_allow_html=True,
+                    )
+                    for t in c.pro_citations[:2]:
+                        rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
+                        st.markdown(
+                            f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
+                            unsafe_allow_html=True,
+                        )
+                with col_con:
+                    st.markdown(
+                        '<div style="font-size:0.75rem; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:2px;">Con Mentions</div>',
+                        unsafe_allow_html=True,
+                    )
+                    for t in c.con_citations[:2]:
+                        rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
+                        st.markdown(
+                            f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
+                            unsafe_allow_html=True,
+                        )
 
-    st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
+        else:
+            # Reassuring positive status note instead of empty broken box
+            st.markdown(
+                f"""
+<div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 14px; margin-top:8px; display:flex; align-items:center; gap:8px;">
+  <span style="font-size:0.95rem; color:#059669;">✓</span>
+  <span style="font-size:0.85rem; color:{tokens['text_muted']};">
+    <strong>High Sentiment Consistency:</strong> All evaluated dimensions show uniform customer consensus without severe polarization.
+  </span>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
 
 
 # ---------------------------------------------------------------------------

@@ -80,5 +80,6 @@ RISK_SEMANTIC_THRESHOLD = 0.75
 # ---------------------------------------------------------------------------
 # Contested Opinion Detection
 # ---------------------------------------------------------------------------
-CONTESTED_MIN_TOTAL = 4      # minimum total tuples for an aspect to be assessed
-CONTESTED_MIN_RATIO = 0.4    # min(pos,neg) / max(pos,neg) threshold
+CONTESTED_MIN_TOTAL = 3      # minimum total tuples for an aspect to be assessed
+CONTESTED_MIN_RATIO = 0.20   # min(pos,neg) / max(pos,neg) threshold (20%+ disagreement)
+
