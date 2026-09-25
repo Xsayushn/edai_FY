@@ -1,0 +1,31 @@
+﻿# ── Secrets — NEVER commit these ──────────────────────────────────────
+.env
+
+# ── ChromaDB vector store (large binary files, rebuilt via ingest.py) ──
+chroma_db/
+
+# ── Python cache ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ───────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── HuggingFace model cache (auto-downloaded, no need to track) ────────
+.cache/
+
+# ── OS files ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE files ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
