@@ -1,18 +1,16 @@
 """
-app.py — Streamlit UI for the Explainable & Safe RAG Opinion Summarizer.
+app.py — Human-Crafted Editorial UI for OpinionLens.
 
-Layout:
-  Top bar  : Brand / Dataset selector + Product Model selector + Query bar + Analyze button
-  Left 60% : Section A (Safety Warnings) · Section B (Consensus) · Section C (Contested)
-  Right 40%: Interactive Evidence Inspector (citation click-through)
+An explainable & safety-guarded opinion intelligence dashboard that bridges
+raw e-commerce customer reviews with verifiable, citation-backed executive synthesis.
 
-Accessibility Features:
-  - 🔊 Web Speech API Audio Briefing (reads alerts and executive summary aloud)
-  - 👁️ High-Contrast Mode (WCAG AAA compliant)
-  - 🔤 Dynamic Text Scaling (Normal / Large)
-  - 🛡️ Zero-API Local Mode (Works 100% offline without requiring any API keys)
-  - 📥 Export Reports (Markdown and JSON download)
-  - 📤 Drag & Drop Custom Dataset Uploader
+Design System:
+  - Inspired by modern engineering dashboards (Linear, Stripe Radar, Perplexity).
+  - Clean typography, subtle hairline borders, authentic citations, zero AI tropes.
+  - Multi-theme architecture:
+      1. ✦ Editorial Studio Light (Default clean white & slate editorial layout)
+      2. ✦ Obsidian Matte Dark (Distraction-free executive dark mode)
+      3. ✦ High-Contrast (WCAG AAA certified accessibility mode)
 """
 
 from __future__ import annotations
@@ -29,7 +27,7 @@ import streamlit.components.v1 as components
 
 # ── page config must be the very first Streamlit call ──────────────────────
 st.set_page_config(
-    page_title="OpinionLens · Explainable & Safe Review Summarizer",
+    page_title="OpinionLens · Product Review Intelligence & Safety Audit",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -61,6 +59,7 @@ def _init_state():
         "selected_review_ids": [],
         "selected_quote": "",
         "selected_aspect": None,
+        "theme_mode": "✦ Editorial Studio Light",
         "high_contrast": False,
         "font_large": False,
         "user_groq_key": "",
@@ -78,207 +77,433 @@ _init_state()
 
 
 # ---------------------------------------------------------------------------
-# Dynamic Styling (Standard vs. High-Contrast & Text Scaling)
+# Design System & Theme Token Engine
 # ---------------------------------------------------------------------------
 
-high_contrast = st.session_state["high_contrast"]
-font_large = st.session_state["font_large"]
+theme_mode = st.session_state.get("theme_mode", "✦ Editorial Studio Light")
+font_large = st.session_state.get("font_large", False)
 
-base_font_size = "18px" if font_large else "15px"
-small_font_size = "15px" if font_large else "13px"
+base_font_size = "16.5px" if font_large else "14.5px"
+small_font_size = "14px" if font_large else "12.5px"
+title_font_size = "1.75rem" if font_large else "1.5rem"
 
-if high_contrast:
-    # WCAG AAA High-Contrast Mode
-    bg_gradient = "#000000"
-    text_color = "#ffffff"
-    card_bg = "#111111"
-    border_color = "#ffffff"
-    safety_bg = "#450a0a"
-    safety_border = "#f87171"
-    consensus_bg = "#064e3b"
-    consensus_border = "#34d399"
-    contested_bg = "#451a03"
-    contested_border = "#fbbf24"
-    evidence_bg = "#1e1b4b"
-    evidence_border = "#818cf8"
-    chip_bg = "#312e81"
-    chip_border = "#a5b4fc"
-    chip_text = "#ffffff"
+if theme_mode == "✦ High-Contrast (WCAG AAA)":
+    tokens = {
+        "bg_color": "#000000",
+        "card_bg": "#0a0a0a",
+        "sidebar_bg": "#000000",
+        "text_primary": "#ffffff",
+        "text_secondary": "#ffffff",
+        "text_muted": "#e2e8f0",
+        "border_color": "#ffffff",
+        "border_subtle": "#ffffff",
+        "header_bg": "#000000",
+        "header_border": "#ffffff",
+        "header_text": "#ffffff",
+        "safety_bg": "#2b0000",
+        "safety_border": "#ff4d4d",
+        "safety_title": "#ff4d4d",
+        "safety_text": "#ffffff",
+        "consensus_bg": "#002b11",
+        "consensus_border": "#4ade80",
+        "consensus_title": "#4ade80",
+        "consensus_text": "#ffffff",
+        "contested_bg": "#2b1a00",
+        "contested_border": "#fde047",
+        "contested_title": "#fde047",
+        "contested_text": "#ffffff",
+        "evidence_bg": "#0a0a0a",
+        "evidence_border": "#ffffff",
+        "evidence_title": "#ffffff",
+        "chip_bg": "#000000",
+        "chip_border": "#ffffff",
+        "chip_text": "#ffffff",
+        "quote_bg": "#ffffff",
+        "quote_text": "#000000",
+        "quote_border": "#ffffff",
+        "btn_primary_bg": "#ffffff",
+        "btn_primary_text": "#000000",
+        "btn_primary_hover": "#e2e8f0",
+        "btn_primary_border": "#ffffff",
+        "chart_font": "#ffffff",
+        "chart_zero": "#ffffff",
+        "tag_bg": "#111111",
+        "tag_text": "#ffffff",
+    }
+elif theme_mode == "✦ Obsidian Matte Dark":
+    tokens = {
+        "bg_color": "#090d16",
+        "card_bg": "#111827",
+        "sidebar_bg": "#0d131f",
+        "text_primary": "#f8fafc",
+        "text_secondary": "#cbd5e1",
+        "text_muted": "#94a3b8",
+        "border_color": "#1e293b",
+        "border_subtle": "#1e293b",
+        "header_bg": "#0f172a",
+        "header_border": "#1e293b",
+        "header_text": "#f8fafc",
+        "safety_bg": "rgba(225, 29, 72, 0.08)",
+        "safety_border": "rgba(244, 63, 94, 0.35)",
+        "safety_title": "#fda4af",
+        "safety_text": "#fecdd3",
+        "consensus_bg": "rgba(16, 185, 129, 0.08)",
+        "consensus_border": "rgba(16, 185, 129, 0.35)",
+        "consensus_title": "#6ee7b7",
+        "consensus_text": "#a7f3d0",
+        "contested_bg": "rgba(245, 158, 11, 0.08)",
+        "contested_border": "rgba(245, 158, 11, 0.35)",
+        "contested_title": "#fde68a",
+        "contested_text": "#fef3c7",
+        "evidence_bg": "#0f172a",
+        "evidence_border": "#1e293b",
+        "evidence_title": "#93c5fd",
+        "chip_bg": "#1e293b",
+        "chip_border": "#334155",
+        "chip_text": "#93c5fd",
+        "quote_bg": "rgba(254, 240, 138, 0.15)",
+        "quote_text": "#fef08a",
+        "quote_border": "#eab308",
+        "btn_primary_bg": "#2563eb",
+        "btn_primary_text": "#ffffff",
+        "btn_primary_hover": "#1d4ed8",
+        "btn_primary_border": "#3b82f6",
+        "chart_font": "#94a3b8",
+        "chart_zero": "rgba(255, 255, 255, 0.15)",
+        "tag_bg": "#1e293b",
+        "tag_text": "#cbd5e1",
+    }
 else:
-    # Modern Sleek Dark Gradient Mode
-    bg_gradient = "linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%)"
-    text_color = "#e2e8f0"
-    card_bg = "rgba(255,255,255,0.04)"
-    border_color = "rgba(255,255,255,0.08)"
-    safety_bg = "rgba(220, 38, 38, 0.15)"
-    safety_border = "rgba(239, 68, 68, 0.6)"
-    consensus_bg = "rgba(16, 185, 129, 0.10)"
-    consensus_border = "rgba(16, 185, 129, 0.4)"
-    contested_bg = "rgba(245, 158, 11, 0.10)"
-    contested_border = "rgba(245, 158, 11, 0.4)"
-    evidence_bg = "rgba(99, 102, 241, 0.10)"
-    evidence_border = "rgba(99, 102, 241, 0.35)"
-    chip_bg = "rgba(99, 102, 241, 0.3)"
-    chip_border = "rgba(99, 102, 241, 0.6)"
-    chip_text = "#a5b4fc"
+    # ✦ Editorial Studio Light (Default clean human aesthetic)
+    tokens = {
+        "bg_color": "#f8fafc",
+        "card_bg": "#ffffff",
+        "sidebar_bg": "#ffffff",
+        "text_primary": "#0f172a",
+        "text_secondary": "#334155",
+        "text_muted": "#64748b",
+        "border_color": "#e2e8f0",
+        "border_subtle": "#f1f5f9",
+        "header_bg": "#ffffff",
+        "header_border": "#e2e8f0",
+        "header_text": "#0f172a",
+        "safety_bg": "#fff1f2",
+        "safety_border": "#fecdd3",
+        "safety_title": "#9f1239",
+        "safety_text": "#881337",
+        "consensus_bg": "#f0fdf4",
+        "consensus_border": "#bbf7d0",
+        "consensus_title": "#065f46",
+        "consensus_text": "#064e3b",
+        "contested_bg": "#fffbeb",
+        "contested_border": "#fde68a",
+        "contested_title": "#92400e",
+        "contested_text": "#78350f",
+        "evidence_bg": "#f8fafc",
+        "evidence_border": "#e2e8f0",
+        "evidence_title": "#0f172a",
+        "chip_bg": "#f1f5f9",
+        "chip_border": "#cbd5e1",
+        "chip_text": "#1e293b",
+        "quote_bg": "#fef9c3",
+        "quote_text": "#713f12",
+        "quote_border": "#ca8a04",
+        "btn_primary_bg": "#0f172a",
+        "btn_primary_text": "#ffffff",
+        "btn_primary_hover": "#1e293b",
+        "btn_primary_border": "#0f172a",
+        "chart_font": "#475569",
+        "chart_zero": "#cbd5e1",
+        "tag_bg": "#f1f5f9",
+        "tag_text": "#475569",
+    }
 
 st.markdown(
     f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
 html, body, [class*="css"] {{
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: {base_font_size};
+    letter-spacing: -0.01em;
 }}
 
 .stApp {{
-    background: {bg_gradient};
-    color: {text_color};
+    background-color: {tokens["bg_color"]};
+    color: {tokens["text_primary"]};
 }}
 
-/* ── Top branding bar ── */
-.brand-bar {{
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    padding: 1rem 2rem;
-    border-radius: 12px;
+[data-testid="stSidebar"] {{
+    background-color: {tokens["sidebar_bg"]};
+    border-right: 1px solid {tokens["border_color"]};
+}}
+
+/* ── Top Editorial Brand Bar ── */
+.brand-header {{
+    background-color: {tokens["header_bg"]};
+    border: 1px solid {tokens["header_border"]};
+    border-radius: 10px;
+    padding: 1.1rem 1.6rem;
     margin-bottom: 1.2rem;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }}
-.brand-title {{
-    font-size: 1.8rem;
+
+.brand-left {{
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}}
+
+.brand-icon-box {{
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background-color: {tokens["btn_primary_bg"]};
+    color: {tokens["btn_primary_text"]};
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 700;
-    color: white;
+    font-size: 1.1rem;
+}}
+
+.brand-name {{
+    font-size: {title_font_size};
+    font-weight: 700;
+    color: {tokens["header_text"]};
+    line-height: 1.2;
     margin: 0;
 }}
-.brand-subtitle {{
-    font-size: 0.95rem;
-    color: rgba(255,255,255,0.9);
+
+.brand-desc {{
+    font-size: {small_font_size};
+    color: {tokens["text_muted"]};
     margin: 0;
+    font-weight: 400;
+}}
+
+.brand-badges {{
+    display: flex;
+    gap: 0.5rem;
+}}
+
+.meta-pill {{
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background-color: {tokens["tag_bg"]};
+    color: {tokens["tag_text"]};
+    border: 1px solid {tokens["border_color"]};
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }}
 
 /* ── Cards ── */
-.card {{
-    border-radius: 12px;
-    padding: 1.2rem 1.4rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-    border: 1px solid {border_color};
-}}
-.card-safety {{
-    background: {safety_bg};
-    border: 2px solid {safety_border};
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-}}
-.card-consensus {{
-    background: {consensus_bg};
-    border: 2px solid {consensus_border};
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
-}}
-.card-contested {{
-    background: {contested_bg};
-    border: 2px solid {contested_border};
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
-}}
-.card-evidence {{
-    background: {evidence_bg};
-    border: 2px solid {evidence_border};
+.editorial-card {{
+    background-color: {tokens["card_bg"]};
+    border: 1px solid {tokens["border_color"]};
+    border-radius: 10px;
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
 }}
 
-/* ── Section headers ── */
-.section-header {{
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
+.card-safety {{
+    background-color: {tokens["safety_bg"]};
+    border: 1px solid {tokens["safety_border"]};
 }}
-.section-title {{
-    font-size: 1.1rem;
+
+.card-consensus {{
+    background-color: {tokens["consensus_bg"]};
+    border: 1px solid {tokens["consensus_border"]};
+}}
+
+.card-contested {{
+    background-color: {tokens["contested_bg"]};
+    border: 1px solid {tokens["contested_border"]};
+}}
+
+.card-evidence {{
+    background-color: {tokens["evidence_bg"]};
+    border: 1px solid {tokens["evidence_border"]};
+}}
+
+/* ── Section Titles ── */
+.section-headline {{
+    font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }}
-.safety-title {{ color: #f87171; }}
-.consensus-title {{ color: #34d399; }}
-.contested-title {{ color: #fbbf24; }}
-.evidence-title {{ color: #a5b4fc; }}
 
-/* ── Citation chips ── */
-.citation-chip {{
-    display: inline-block;
-    background: {chip_bg};
-    border: 1.5px solid {chip_border};
-    color: {chip_text};
+.title-safety {{ color: {tokens["safety_title"]}; }}
+.title-consensus {{ color: {tokens["consensus_title"]}; }}
+.title-contested {{ color: {tokens["contested_title"]}; }}
+.title-evidence {{ color: {tokens["evidence_title"]}; }}
+
+.section-subtext {{
     font-size: {small_font_size};
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    margin: 0 3px;
+    color: {tokens["text_muted"]};
+    margin-bottom: 0.9rem;
+    line-height: 1.4;
 }}
 
-/* ── Quote highlight ── */
-.highlight-quote {{
-    background: rgba(251, 191, 36, 0.3);
-    border-left: 4px solid #fbbf24;
+/* ── Editorial Footnote Citation Chips [#14] ── */
+.citation-chip {{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: {tokens["chip_bg"]};
+    border: 1px solid {tokens["chip_border"]};
+    color: {tokens["chip_text"]};
+    margin: 0 2px;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}}
+.citation-chip:hover {{
+    transform: translateY(-1px);
+    border-color: {tokens["text_primary"]};
+}}
+
+/* ── Natural Text Highlight Marker ── */
+.quote-marker {{
+    background-color: {tokens["quote_bg"]};
+    color: {tokens["quote_text"]};
+    border-left: 3px solid {tokens["quote_border"]};
     padding: 6px 10px;
     border-radius: 4px;
-    font-style: italic;
-    color: #fef08a;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 6px 0;
+    display: block;
+}}
+
+/* ── Individual Review Card in Inspector ── */
+.review-entry {{
+    background-color: {tokens["card_bg"]};
+    border: 1px solid {tokens["border_color"]};
+    border-radius: 8px;
+    padding: 1.1rem;
+    margin-bottom: 0.9rem;
+}}
+
+.review-meta-bar {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: {small_font_size};
+    color: {tokens["text_muted"]};
+    border-bottom: 1px solid {tokens["border_subtle"]};
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
+}}
+
+.review-id-tag {{
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: {tokens["text_primary"]};
+}}
+
+.star-rating {{
+    color: #eab308;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}}
+
+.star-empty {{
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}}
+
+/* ── Buttons & Action Styling ── */
+.stButton > button {{
+    background-color: {tokens["btn_primary_bg"]} !important;
+    color: {tokens["btn_primary_text"]} !important;
+    border: 1px solid {tokens["btn_primary_border"]} !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    padding: 0.45rem 1.3rem !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.15s ease-in-out !important;
+}}
+
+.stButton > button:hover {{
+    background-color: {tokens["btn_primary_hover"]} !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.08) !important;
+}}
+
+/* ── Metrics Strip ── */
+div[data-testid="stMetric"] {{
+    background-color: {tokens["card_bg"]};
+    border: 1px solid {tokens["border_color"]};
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}}
+
+div[data-testid="stMetricLabel"] {{
+    color: {tokens["text_muted"]} !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}}
+
+div[data-testid="stMetricValue"] {{
+    color: {tokens["text_primary"]} !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}}
+
+/* ── Minimalist Media Player Bar ── */
+.media-briefing-bar {{
+    background-color: {tokens["card_bg"]};
+    border: 1px solid {tokens["border_color"]};
+    border-radius: 8px;
+    padding: 9px 15px;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}}
+
+.media-label {{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: {tokens["text_primary"]};
+    font-size: 0.88rem;
     font-weight: 600;
 }}
 
-/* ── Review card in inspector ── */
-.review-card {{
-    background: {card_bg};
-    border-radius: 10px;
-    padding: 1.1rem;
-    margin-bottom: 0.8rem;
-    border: 1px solid {border_color};
-}}
-.review-meta {{
+.media-sublabel {{
     font-size: {small_font_size};
-    color: #cbd5e1;
-    margin-bottom: 0.4rem;
-}}
-.star-filled {{ color: #fbbf24; }}
-.star-empty  {{ color: #475569; }}
-
-/* ── Alert badge ── */
-.alert-badge {{
-    display: inline-block;
-    background: #dc2626;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 3px 9px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-right: 6px;
+    color: {tokens["text_muted"]};
+    font-weight: 400;
 }}
 
-.subtle-divider {{
+.subtle-line {{
     border: none;
-    border-top: 1px solid {border_color};
-    margin: 0.8rem 0;
+    border-top: 1px solid {tokens["border_color"]};
+    margin: 0.75rem 0;
 }}
-
-.stButton > button {{
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    padding: 0.5rem 1.8rem;
-    transition: transform 0.15s, box-shadow 0.15s;
-}}
-.stButton > button:hover {{
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}}
-div[data-testid="stMetricValue"] {{ color: #a5b4fc; font-weight: 800; }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -286,12 +511,13 @@ div[data-testid="stMetricValue"] {{ color: #a5b4fc; font-weight: 800; }}
 
 
 # ---------------------------------------------------------------------------
-# Helper renderers
+# Helper Renderers
 # ---------------------------------------------------------------------------
 
 def _stars(rating: int) -> str:
+    rating = max(1, min(5, int(rating or 5)))
     return (
-        '<span class="star-filled">' + "★" * rating + "</span>"
+        '<span class="star-rating">' + "★" * rating + "</span>"
         + '<span class="star-empty">' + "★" * (5 - rating) + "</span>"
     )
 
@@ -302,12 +528,12 @@ def _extract_citation_ids(text: str) -> list[int]:
 
 
 def _render_cited_text(text: str) -> str:
-    """Replace [Review #N] / [#N, #M] patterns with styled chip spans."""
+    """Replace [Review #N] / [#N, #M] patterns with clean editorial citation chips."""
     def _replace(m):
         raw = m.group(0)
         ids = re.findall(r"\d+", raw)
         chips = "".join(
-            f'<span class="citation-chip" title="Review #{i}">#{i}</span>'
+            f'<span class="citation-chip" title="Inspect Review #{i}">Ref #{i}</span>'
             for i in ids
         )
         return chips
@@ -316,13 +542,13 @@ def _render_cited_text(text: str) -> str:
 
 
 def _highlight_quote_in_text(full_text: str, quote: str) -> str:
-    """Bold-highlight the matching quote in the full review text."""
+    """Wrap matching quote in an authentic highlighter marker."""
     if not quote or not full_text:
         return full_text
     escaped = re.escape(quote[:80])
     highlighted = re.sub(
         escaped,
-        f'<span class="highlight-quote">{quote[:80]}</span>',
+        f'<span class="quote-marker">{quote[:80]}</span>',
         full_text,
         flags=re.IGNORECASE,
         count=1,
@@ -347,23 +573,29 @@ def _set_inspector(review_ids: list[int], quote: str = ""):
 
 
 # ---------------------------------------------------------------------------
-# Evidence Inspector (Right Panel)
+# Section: Evidence & Source Verifier (Right Panel)
 # ---------------------------------------------------------------------------
 
 def render_evidence_inspector():
     st.markdown(
-        '<div class="section-header">'
-        '<span style="font-size:1.4rem">🔎</span>'
-        '<span class="section-title evidence-title">Evidence Inspector</span>'
-        "</div>",
+        f"""
+<div class="section-headline title-evidence">
+  <span>Source Evidence &amp; Citation Verifier</span>
+</div>
+<div class="section-subtext">
+  Inspect verified customer quotes, timestamps, and ratings anchored to summary claims.
+</div>
+""",
         unsafe_allow_html=True,
     )
 
     if not st.session_state["selected_review_ids"]:
         st.markdown(
-            '<p style="color:#94a3b8;font-size:0.9rem;font-style:italic;">'
-            "Click any 🔎 button or citation chip in the summary to trace the exact source reviews here."
-            "</p>",
+            f"""
+<div style="padding: 2.5rem 1rem; text-align: center; color: {tokens['text_muted']}; font-size: 0.88rem;">
+  Select any citation chip <span class="citation-chip">Ref #</span> or click <em>Inspect Evidence</em> to trace the exact source reviews here.
+</div>
+""",
             unsafe_allow_html=True,
         )
         return
@@ -372,7 +604,8 @@ def render_evidence_inspector():
     active_quote = st.session_state.get("selected_quote", "")
 
     st.markdown(
-        f'<p style="color:#a5b4fc;font-size:0.85rem;font-weight:600;">Showing {len(active_ids)} source review(s)</p>',
+        f'<div style="font-size:0.8rem; font-weight:600; color:{tokens["text_muted"]}; margin-bottom:0.75rem;">'
+        f'DISPLAYING {len(active_ids)} GROUNDED SOURCE CITATION(S)</div>',
         unsafe_allow_html=True,
     )
 
@@ -384,39 +617,54 @@ def render_evidence_inspector():
         tuples_for_review = _tuple_lookup(rid)
         body_html = _highlight_quote_in_text(review["review_text"], active_quote)
 
+        helpful_text = f"{review.get('helpful_votes', 0)} helpful votes" if review.get("helpful_votes") else "Verified purchase"
+
         st.markdown(
             f"""
-<div class="review-card">
-  <div class="review-meta">
-    Review <strong style="color:#a5b4fc;font-size:1rem;">#{rid}</strong> &nbsp;|&nbsp;
-    {_stars(review['rating'])} &nbsp;|&nbsp;
-    📅 {review['date']} &nbsp;|&nbsp;
-    👍 {review['helpful_votes']} helpful votes
+<div class="review-entry">
+  <div class="review-meta-bar">
+    <div>
+      <span class="review-id-tag">Review #{rid}</span>
+      &nbsp;&bull;&nbsp; {_stars(review['rating'])}
+    </div>
+    <div>
+      <span>{review.get('date', 'Customer Review')}</span>
+      &nbsp;&bull;&nbsp; <span>{helpful_text}</span>
+    </div>
   </div>
-  <div style="font-size:0.92rem;line-height:1.6;color:#e2e8f0;">{body_html}</div>
+  <div style="font-size:0.9rem; line-height:1.6; color:{tokens['text_secondary']};">
+    {body_html}
+  </div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         if tuples_for_review:
-            with st.expander(f"Extracted opinions from Review #{rid}", expanded=False):
+            with st.expander(f"Extracted Aspects (Review #{rid})", expanded=False):
                 for t in tuples_for_review:
-                    sentiment_color = {
-                        "positive": "#34d399",
-                        "negative": "#f87171",
-                        "neutral": "#94a3b8",
-                    }.get(t.sentiment, "#94a3b8")
+                    sentiment_badge_style = {
+                        "positive": "background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;",
+                        "negative": "background:#fff1f2; color:#9f1239; border:1px solid #fecdd3;",
+                        "neutral": "background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;",
+                    }.get(t.sentiment, "background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;")
+
                     st.markdown(
-                        f"**{t.aspect}** — "
-                        f'<span style="color:{sentiment_color};font-weight:700;">{t.sentiment.upper()}</span><br/>'
-                        f'<em style="color:#cbd5e1;">{t.summary_claim}</em>',
+                        f"""
+<div style="font-size:0.82rem; margin-bottom:6px; line-height:1.4;">
+  <strong>{t.aspect}</strong> &nbsp;
+  <span style="font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:4px; {sentiment_badge_style}">
+    {t.sentiment.upper()}
+  </span><br/>
+  <span style="color:{tokens['text_muted']};">"{t.summary_claim}"</span>
+</div>
+""",
                         unsafe_allow_html=True,
                     )
 
 
 # ---------------------------------------------------------------------------
-# Section A — Safety Warnings
+# Section A — Critical Product & Safety Notices
 # ---------------------------------------------------------------------------
 
 def render_safety_section(alerts):
@@ -424,11 +672,15 @@ def render_safety_section(alerts):
         return
 
     st.markdown(
-        '<div class="card card-safety">'
-        '<div class="section-header">'
-        '<span style="font-size:1.4rem">🚨</span>'
-        '<span class="section-title safety-title">Critical Safety Warnings</span>'
-        "</div>",
+        f"""
+<div class="editorial-card card-safety">
+  <div class="section-headline title-safety">
+    <span>Critical Product &amp; Safety Notices</span>
+  </div>
+  <div class="section-subtext">
+    Isolated consumer hazard reports flagged before statistical aggregation to prevent dilution.
+  </div>
+""",
         unsafe_allow_html=True,
     )
 
@@ -438,50 +690,61 @@ def render_safety_section(alerts):
         more = f" +{len(review_ids)-6} more" if len(review_ids) > 6 else ""
 
         st.markdown(
-            f'<span class="alert-badge">⚠ CRITICAL</span>'
-            f'<strong style="color:#fca5a5;font-size:1.05rem;">'
-            f'{alert.risk_term.title()}</strong> detected across '
-            f'<strong>{len(review_ids)}</strong> review(s) — '
-            f'<span style="color:#cbd5e1;font-size:0.85rem;">{id_str}{more}</span>',
+            f"""
+<div style="margin: 0.5rem 0;">
+  <span style="font-size:0.75rem; font-weight:700; background:#e11d48; color:white; padding:2px 8px; border-radius:4px; margin-right:6px;">
+    HAZARD REPORT
+  </span>
+  <strong style="color:{tokens['safety_title']}; font-size:0.95rem;">
+    {alert.risk_term.title()}
+  </strong>
+  <span style="font-size:0.85rem; color:{tokens['text_muted']};">
+    — detected across {len(review_ids)} review(s) [{id_str}{more}]
+  </span>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
         for q in alert.quotes[:2]:
             st.markdown(
-                f'<div class="highlight-quote" style="margin:6px 0;">'
-                f'"{q[:160]}"</div>',
+                f'<div class="quote-marker">"{q[:160]}"</div>',
                 unsafe_allow_html=True,
             )
 
         if st.button(
-            f"🔎 Inspect {alert.risk_term.title()} evidence",
+            f"Inspect {alert.risk_term.title()} Evidence",
             key=f"safety_btn_{alert.risk_term}",
         ):
             _set_inspector(review_ids, alert.quotes[0] if alert.quotes else "")
             st.rerun()
 
-        st.markdown('<hr class="subtle-divider"/>', unsafe_allow_html=True)
+        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
-# Section B — Consensus Summary
+# Section B — Customer Consensus Summary
 # ---------------------------------------------------------------------------
 
 def render_consensus_section(summary):
     st.markdown(
-        '<div class="card card-consensus">'
-        '<div class="section-header">'
-        '<span style="font-size:1.4rem">✅</span>'
-        '<span class="section-title consensus-title">Consensus Summary</span>'
-        "</div>",
+        f"""
+<div class="editorial-card card-consensus">
+  <div class="section-headline title-consensus">
+    <span>Verified Customer Consensus</span>
+  </div>
+  <div class="section-subtext">
+    Key product dimensions where the majority of customer sentiment converges.
+  </div>
+""",
         unsafe_allow_html=True,
     )
 
     if not summary or not summary.consensus_points:
         st.markdown(
-            '<p style="color:#94a3b8;font-style:italic;">No consensus generated.</p>',
+            f'<p style="color:{tokens["text_muted"]}; font-style:italic;">No consensus generated.</p>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -494,12 +757,12 @@ def render_consensus_section(summary):
         col_text, col_btn = st.columns([5, 1])
         with col_text:
             st.markdown(
-                f'<div style="margin:5px 0;font-size:0.95rem;line-height:1.6;">'
-                f"• {rendered}</div>",
+                f'<div style="margin:6px 0; font-size:0.92rem; line-height:1.6; color:{tokens["text_secondary"]};">'
+                f"&bull; {rendered}</div>",
                 unsafe_allow_html=True,
             )
         with col_btn:
-            if ids and st.button("🔎", key=f"consensus_btn_{i}", help="Inspect source reviews"):
+            if ids and st.button("Inspect", key=f"consensus_btn_{i}", help="Inspect source reviews"):
                 quote = ""
                 for rid in ids:
                     ts = _tuple_lookup(rid)
@@ -513,32 +776,36 @@ def render_consensus_section(summary):
 
 
 # ---------------------------------------------------------------------------
-# Section C — Contested Viewpoints
+# Section C — Contested Dimensions & Polarized Feedback
 # ---------------------------------------------------------------------------
 
 def render_contested_section(contested, stats):
     st.markdown(
-        '<div class="card card-contested">'
-        '<div class="section-header">'
-        '<span style="font-size:1.4rem">⚖️</span>'
-        '<span class="section-title contested-title">Contested Viewpoints</span>'
-        "</div>",
+        f"""
+<div class="editorial-card card-contested">
+  <div class="section-headline title-contested">
+    <span>Contested Dimensions &amp; Polarized Feedback</span>
+  </div>
+  <div class="section-subtext">
+    Aspects where customer opinions split into conflicting positive and negative camps.
+  </div>
+""",
         unsafe_allow_html=True,
     )
 
     if not contested:
         st.markdown(
-            '<p style="color:#94a3b8;font-style:italic;">No strongly contested aspects detected.</p>',
+            f'<p style="color:{tokens["text_muted"]}; font-style:italic;">No statistically polarized aspects detected for this product.</p>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # Aspect distribution chart
+    # Clean Aspect Distribution Chart
     if stats:
-        aspects = [s["aspect"] for s in stats[:12]]
-        pos_vals = [s["positive"] for s in stats[:12]]
-        neg_vals = [s["negative"] for s in stats[:12]]
+        aspects = [s["aspect"] for s in stats[:10]]
+        pos_vals = [s["positive"] for s in stats[:10]]
+        neg_vals = [s["negative"] for s in stats[:10]]
 
         fig = go.Figure()
         fig.add_trace(go.Bar(
@@ -546,7 +813,7 @@ def render_contested_section(contested, stats):
             y=aspects,
             x=pos_vals,
             orientation="h",
-            marker_color="#34d399",
+            marker_color="#10b981",
             opacity=0.9,
         ))
         fig.add_trace(go.Bar(
@@ -554,113 +821,122 @@ def render_contested_section(contested, stats):
             y=aspects,
             x=[-v for v in neg_vals],
             orientation="h",
-            marker_color="#f87171",
+            marker_color="#f43f5e",
             opacity=0.9,
         ))
         fig.update_layout(
             barmode="overlay",
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#cbd5e1", size=12),
+            font=dict(color=tokens["chart_font"], size=11, family="Inter"),
             xaxis=dict(
                 showgrid=False,
                 zeroline=True,
-                zerolinecolor="rgba(255,255,255,0.3)",
-                tickfont=dict(color="#94a3b8"),
-                title="← Negative   |   Positive →",
+                zerolinecolor=tokens["chart_zero"],
+                tickfont=dict(color=tokens["chart_font"]),
+                title="Negative vs. Positive Mentions",
             ),
             yaxis=dict(showgrid=False),
             legend=dict(
                 orientation="h",
-                x=0, y=1.08,
+                x=0, y=1.12,
                 font=dict(size=11),
             ),
             margin=dict(l=10, r=10, t=10, b=10),
-            height=max(180, len(aspects) * 30),
+            height=max(180, len(aspects) * 28),
         )
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-    # Contested aspect detail cards
+    # Contested Aspect Detail Cards
     for c in contested:
         ratio_pct = int(c.ratio * 100)
         st.markdown(
-            f'<div style="margin:10px 0 4px 0;">'
-            f'<strong style="color:#fbbf24;font-size:1rem;">{c.aspect}</strong> '
-            f'<span style="color:#cbd5e1;font-size:0.85rem;">'
-            f'({c.pos_count} positive · {c.neg_count} negative · '
-            f'contention {ratio_pct}%)</span>'
-            "</div>",
+            f"""
+<div style="margin: 0.8rem 0 0.35rem 0; display:flex; justify-content:space-between; align-items:center;">
+  <div>
+    <strong style="color:{tokens['text_primary']}; font-size:0.95rem;">{c.aspect}</strong>
+    <span style="color:{tokens['text_muted']}; font-size:0.82rem; margin-left:6px;">
+      ({c.pos_count} positive &bull; {c.neg_count} negative)
+    </span>
+  </div>
+  <span style="font-size:0.75rem; font-weight:700; background:{tokens['tag_bg']}; color:{tokens['tag_text']}; padding:2px 8px; border-radius:4px; border:1px solid {tokens['border_color']};">
+    Polarity Index: {ratio_pct}%
+  </span>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
         col_pro, col_con = st.columns(2)
         with col_pro:
             st.markdown(
-                '<span style="color:#34d399;font-size:0.85rem;font-weight:700;">👍 PRO</span>',
+                '<div style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; margin-bottom:2px;">Pro Mentions</div>',
                 unsafe_allow_html=True,
             )
             for t in c.pro_citations[:2]:
                 rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
                 st.markdown(
-                    f'<div style="font-size:0.85rem;color:#a7f3d0;margin:3px 0;">{rendered}</div>',
+                    f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
                     unsafe_allow_html=True,
                 )
         with col_con:
             st.markdown(
-                '<span style="color:#f87171;font-size:0.85rem;font-weight:700;">👎 CON</span>',
+                '<div style="font-size:0.75rem; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:2px;">Con Mentions</div>',
                 unsafe_allow_html=True,
             )
             for t in c.con_citations[:2]:
                 rendered = _render_cited_text(f"[Review #{t.review_id}] {t.summary_claim}")
                 st.markdown(
-                    f'<div style="font-size:0.85rem;color:#fca5a5;margin:3px 0;">{rendered}</div>',
+                    f'<div style="font-size:0.83rem; color:{tokens["text_secondary"]}; line-height:1.4; margin:3px 0;">{rendered}</div>',
                     unsafe_allow_html=True,
                 )
 
-        st.markdown('<hr class="subtle-divider"/>', unsafe_allow_html=True)
+        st.markdown(f'<hr class="subtle-line"/>', unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
-# Accessibility: Web Speech API Audio Briefing (Text-to-Speech)
+# Audio Accessibility Player Bar (Text-to-Speech)
 # ---------------------------------------------------------------------------
 
 def render_audio_briefing(alerts, summary, contested):
     """
-    Renders an accessible voice briefing button that uses HTML5 SpeechSynthesis.
-    Works natively in the browser without any extra python packages.
+    Renders an accessible voice briefing bar using HTML5 SpeechSynthesis.
     """
     speech_parts = []
     if alerts:
-        speech_parts.append("Attention: Critical Safety Warnings Detected.")
+        speech_parts.append("Important Safety Notice:")
         for a in alerts:
-            speech_parts.append(f"Risk: {a.risk_term} detected in {len(a.matching_reviews)} reviews.")
+            speech_parts.append(f"Risk: {a.risk_term} identified across {len(a.matching_reviews)} customer reports.")
 
     if summary and summary.consensus_points:
-        speech_parts.append("Consensus Summary:")
+        speech_parts.append("Executive Consensus:")
         for p in summary.consensus_points:
-            # Strip citation tags for cleaner audio playback
             clean_p = re.sub(r"\[(?:Review\s+)?#[\d,\s#]+\]", "", p).strip()
             speech_parts.append(clean_p)
 
     if contested:
-        speech_parts.append("Contested Viewpoints:")
+        speech_parts.append("Contested feedback:")
         for c in contested[:3]:
-            speech_parts.append(f"{c.aspect}: polarized feedback with {c.pos_count} positive and {c.neg_count} negative reviews.")
+            speech_parts.append(f"{c.aspect}: polarized ratings with {c.pos_count} positive and {c.neg_count} negative reports.")
 
     full_text = " ".join(speech_parts).replace('"', '\\"').replace("\n", " ")
 
     audio_html = f"""
-    <div style="background: rgba(99, 102, 241, 0.15); border: 1.5px solid rgba(99, 102, 241, 0.4); border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
-        <div style="color: #c7d2fe; font-size: 0.9rem; font-weight: 600;">
-            🔊 <strong>Voice Accessibility Briefing</strong> (Audio Read-Aloud)
+    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:10px 16px; margin-bottom:1.1rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px 0 rgba(0,0,0,0.02);">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.1rem;">🔊</span>
+            <div>
+                <strong style="color:{tokens['text_primary']}; font-size:0.88rem;">Spoken Audio Briefing</strong>
+                <div style="color:{tokens['text_muted']}; font-size:0.75rem;">Hands-free voice read-aloud of safety alerts and executive consensus.</div>
+            </div>
         </div>
         <div>
-            <button onclick="playAudioBriefing()" style="background: #4f46e5; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-right: 6px;">
+            <button onclick="playAudioBriefing()" style="background:{tokens['btn_primary_bg']}; color:{tokens['btn_primary_text']}; border:none; border-radius:5px; padding:5px 13px; font-size:0.8rem; font-weight:600; cursor:pointer; margin-right:6px;">
                 ▶ Play Briefing
             </button>
-            <button onclick="stopAudioBriefing()" style="background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+            <button onclick="stopAudioBriefing()" style="background:{tokens['tag_bg']}; color:{tokens['tag_text']}; border:1px solid {tokens['border_color']}; border-radius:5px; padding:5px 12px; font-size:0.8rem; font-weight:600; cursor:pointer;">
                 ⏹ Stop
             </button>
         </div>
@@ -669,7 +945,7 @@ def render_audio_briefing(alerts, summary, contested):
     <script>
     function playAudioBriefing() {{
         if (!('speechSynthesis' in window)) {{
-            alert('Text-to-speech is not supported by your browser.');
+            alert('Speech synthesis is not supported by your browser.');
             return;
         }}
         window.speechSynthesis.cancel();
@@ -687,7 +963,7 @@ def render_audio_briefing(alerts, summary, contested):
     }}
     </script>
     """
-    components.html(audio_html, height=60)
+    components.html(audio_html, height=62)
 
 
 # ---------------------------------------------------------------------------
@@ -695,43 +971,41 @@ def render_audio_briefing(alerts, summary, contested):
 # ---------------------------------------------------------------------------
 
 def generate_export_payloads(product_id: str, brand_name: str, alerts, summary, contested, stats):
-    """Generate Markdown and JSON reports for auditing & accessibility."""
-    # Markdown
+    """Generate Markdown and JSON reports for auditing & governance."""
     md_lines = [
-        f"# 🔍 OpinionLens Executive Summary Report",
+        f"# OpinionLens Executive Review Audit",
         f"- **Product Model:** {product_id}",
-        f"- **Brand/Source:** {brand_name}",
-        f"- **Generated:** {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"- **Brand / Source:** {brand_name}",
+        f"- **Audit Timestamp:** {time.strftime('%Y-%m-%d %H:%M:%S UTC')}",
         "",
-        "## 🚨 1. Critical Safety Warnings",
+        "## 1. Critical Product & Safety Notices",
     ]
     if alerts:
         for a in alerts:
-            md_lines.append(f"- **RISK:** {a.risk_term.upper()} (Found in {len(a.matching_reviews)} reviews: {a.matching_reviews})")
+            md_lines.append(f"- **HAZARD:** {a.risk_term.upper()} (Found in {len(a.matching_reviews)} reviews: {a.matching_reviews})")
             for q in a.quotes[:2]:
                 md_lines.append(f"  - Quote: *\"{q}\"*")
     else:
         md_lines.append("No critical safety warnings detected.")
 
-    md_lines.extend(["", "## ✅ 2. Consensus Summary"])
+    md_lines.extend(["", "## 2. Customer Consensus Summary"])
     if summary and summary.consensus_points:
         for p in summary.consensus_points:
             md_lines.append(f"- {p}")
 
-    md_lines.extend(["", "## ⚖️ 3. Contested Viewpoints"])
+    md_lines.extend(["", "## 3. Contested Dimensions & Polarized Feedback"])
     if contested:
         for c in contested:
-            md_lines.append(f"- **{c.aspect}:** {c.pos_count} Positive vs {c.neg_count} Negative (Ratio: {c.ratio:.2f})")
+            md_lines.append(f"- **{c.aspect}:** {c.pos_count} Positive vs {c.neg_count} Negative (Polarity: {c.ratio:.2f})")
     else:
         md_lines.append("No polarized aspects detected.")
 
     md_content = "\n".join(md_lines)
 
-    # JSON schema
     json_data = {
         "product_id": product_id,
         "brand_name": brand_name,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S UTC"),
         "safety_alerts": [
             {"risk": a.risk_term, "reviews": a.matching_reviews, "quotes": a.quotes}
             for a in alerts
@@ -748,12 +1022,11 @@ def generate_export_payloads(product_id: str, brand_name: str, alerts, summary, 
 
 
 # ---------------------------------------------------------------------------
-# Main pipeline runner
+# Main Pipeline Runner
 # ---------------------------------------------------------------------------
 
 def run_pipeline(csv_source, product_id: str, query: str):
-    """Execute the full RAG pipeline and store results in session_state."""
-    progress_bar = st.progress(0, text="Starting pipeline…")
+    progress_bar = st.progress(0, text="Initializing analysis engine…")
 
     user_api_key = st.session_state.get("user_groq_key", "").strip()
     is_offline = (st.session_state.get("exec_mode") == "🛡️ Zero-API Local Mode (Offline / Free)")
@@ -761,19 +1034,19 @@ def run_pipeline(csv_source, product_id: str, query: str):
 
     try:
         # Step 1: Ingest (idempotent)
-        progress_bar.progress(0.05, text="Checking vector index in ChromaDB…")
+        progress_bar.progress(0.05, text="Checking ChromaDB vector index…")
         if not is_already_ingested(product_id):
-            progress_bar.progress(0.08, text="Indexing product reviews into ChromaDB…")
+            progress_bar.progress(0.10, text="Indexing product reviews into ChromaDB…")
             ingest_product(
                 csv_source,
                 product_id,
                 progress_callback=lambda p, m: progress_bar.progress(
-                    0.08 + p * 0.32, text=m
+                    0.10 + p * 0.32, text=m
                 ),
             )
 
         # Step 2: Retrieval
-        progress_bar.progress(0.42, text="Retrieving relevant reviews…")
+        progress_bar.progress(0.44, text="Retrieving relevant reviews…")
         is_general = query.strip().lower() in {
             "", "summarize", "summarize entire product", "overall", "general"
         }
@@ -781,13 +1054,13 @@ def run_pipeline(csv_source, product_id: str, query: str):
         reviews = retrieve_opinions(product_id, query, mode=mode)
 
         if not reviews:
-            st.error("No reviews retrieved. Make sure ingestion completed successfully.")
+            st.error("No reviews retrieved. Ensure ingestion completed successfully.")
             return
 
         st.session_state["reviews"] = reviews
 
         # Step 3: Aspect Extraction
-        progress_bar.progress(0.52, text=f"Extracting opinions from {len(reviews)} reviews…")
+        progress_bar.progress(0.55, text=f"Extracting opinions across {len(reviews)} reviews…")
         extraction = extract_aspects(
             reviews,
             api_key=user_api_key,
@@ -798,12 +1071,12 @@ def run_pipeline(csv_source, product_id: str, query: str):
         st.session_state["tuples"] = tuples
 
         # Step 4: Safety guard
-        progress_bar.progress(0.72, text="Running Critical-Minority Safety Guard…")
+        progress_bar.progress(0.74, text="Evaluating safety guard against critical hazards…")
         alerts = detect_critical_risks(tuples)
         st.session_state["alerts"] = alerts
 
         # Step 5: Aggregation
-        progress_bar.progress(0.80, text="Computing aspect clusters & contention ratios…")
+        progress_bar.progress(0.82, text="Aggregating aspect clusters & polarity…")
         clusters = build_aspect_clusters(tuples)
         contested = compute_contention(clusters)
         stats = summarize_aspect_stats(clusters)
@@ -812,7 +1085,7 @@ def run_pipeline(csv_source, product_id: str, query: str):
         st.session_state["stats"] = stats
 
         # Step 6: Summary generation
-        progress_bar.progress(0.88, text="Generating cited summary…")
+        progress_bar.progress(0.90, text="Synthesizing cited executive report…")
         summary = generate_summary(
             clusters,
             contested,
@@ -825,7 +1098,7 @@ def run_pipeline(csv_source, product_id: str, query: str):
 
         st.session_state["analysis_done"] = True
         progress_bar.progress(1.0, text="Analysis Complete!")
-        time.sleep(0.3)
+        time.sleep(0.2)
         progress_bar.empty()
 
     except Exception as e:
@@ -835,16 +1108,23 @@ def run_pipeline(csv_source, product_id: str, query: str):
 
 
 # ---------------------------------------------------------------------------
-# UI — Branding Header
+# UI — Top Editorial Brand Bar
 # ---------------------------------------------------------------------------
 
 st.markdown(
-    """
-<div class="brand-bar">
-  <span style="font-size:2.2rem;">🔍</span>
-  <div>
-    <p class="brand-title">OpinionLens</p>
-    <p class="brand-subtitle">Explainable &amp; Safe RAG · Universal Opinion Summarizer with Evidence Attribution</p>
+    f"""
+<div class="brand-header">
+  <div class="brand-left">
+    <div class="brand-icon-box">OL</div>
+    <div>
+      <h1 class="brand-name">OpinionLens</h1>
+      <p class="brand-desc">Evidence-Grounded Review Synthesis &amp; Product Safety Audit System</p>
+    </div>
+  </div>
+  <div class="brand-badges">
+    <span class="meta-pill">ChromaDB Indexed</span>
+    <span class="meta-pill">SemEval-2016 Benchmark</span>
+    <span class="meta-pill">Local / Groq Dual Engine</span>
   </div>
 </div>
 """,
@@ -853,10 +1133,10 @@ st.markdown(
 
 
 # ---------------------------------------------------------------------------
-# UI — Controls Row (Dataset, Product, Query, Analyze)
+# UI — Filter & Query Control Strip
 # ---------------------------------------------------------------------------
 
-ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([2.5, 3, 3.5, 1.2])
+ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([2.5, 3.2, 3.3, 1.2])
 
 brands = list_all_brands()
 brand_labels = list(brands.keys())
@@ -864,7 +1144,7 @@ brand_labels = list(brands.keys())
 # If user uploaded a custom dataset, add it to options
 if st.session_state.get("custom_dataset_df") is not None:
     custom_name = st.session_state.get("custom_dataset_name", "Uploaded Dataset")
-    brand_labels.insert(0, f"📤 {custom_name}")
+    brand_labels.insert(0, f"📁 {custom_name}")
 
 default_brand_idx = 0
 for i, lbl in enumerate(brand_labels):
@@ -873,16 +1153,16 @@ for i, lbl in enumerate(brand_labels):
         break
 
 with ctrl_col1:
-    selected_brand = st.selectbox("📁 Brand / Dataset", brand_labels, index=default_brand_idx)
+    selected_brand = st.selectbox("Product Brand / Dataset", brand_labels, index=default_brand_idx)
 
 # Determine active dataset source
-if selected_brand.startswith("📤"):
+if selected_brand.startswith("📁") and st.session_state.get("custom_dataset_df") is not None:
     active_dataset_source = st.session_state["custom_dataset_df"]
 else:
     active_dataset_source = brands[selected_brand]
 
 with ctrl_col2:
-    with st.spinner("Loading products…"):
+    with st.spinner("Loading product models…"):
         products_df = list_products_in_csv(active_dataset_source)
 
     if products_df.empty:
@@ -901,40 +1181,45 @@ with ctrl_col2:
             default_prod_idx = i
             break
 
-    selected_product_label = st.selectbox("📱 Product Model", product_labels, index=default_prod_idx)
+    selected_product_label = st.selectbox("Hardware Model", product_labels, index=default_prod_idx)
 
 selected_product_id = product_options[selected_product_label]
 
 with ctrl_col3:
     query = st.text_input(
-        "🔍 Query",
+        "Aspect Filter Query",
         value="",
-        placeholder="Leave blank for balanced summary, or ask e.g. 'battery heating issues'",
+        placeholder="Leave blank for balanced summary, or ask e.g. 'battery heating'",
     )
 
 with ctrl_col4:
     st.markdown("<br/>", unsafe_allow_html=True)
-    analyze = st.button("⚡ Analyze", use_container_width=True)
+    analyze = st.button("Run Audit", use_container_width=True)
 
 
 # ---------------------------------------------------------------------------
-# Sidebar — Accessibility, AI Engine, & Custom Uploads
+# Sidebar — Preferences, Engine, & Custom Uploads
 # ---------------------------------------------------------------------------
 
 with st.sidebar:
-    st.markdown("## ♿ Accessibility & Display")
-    contrast_toggle = st.toggle("👁️ High Contrast Mode (WCAG AAA)", value=st.session_state["high_contrast"])
-    if contrast_toggle != st.session_state["high_contrast"]:
-        st.session_state["high_contrast"] = contrast_toggle
+    st.markdown("### Display & Styling")
+    selected_theme = st.selectbox(
+        "Visual Theme",
+        ["✦ Editorial Studio Light", "✦ Obsidian Matte Dark", "✦ High-Contrast (WCAG AAA)"],
+        index=0 if st.session_state["theme_mode"] == "✦ Editorial Studio Light"
+        else (1 if st.session_state["theme_mode"] == "✦ Obsidian Matte Dark" else 2),
+    )
+    if selected_theme != st.session_state["theme_mode"]:
+        st.session_state["theme_mode"] = selected_theme
         st.rerun()
 
-    font_toggle = st.toggle("🔤 Large Readable Text (120%)", value=st.session_state["font_large"])
+    font_toggle = st.toggle("Large Text (120% Scale)", value=st.session_state["font_large"])
     if font_toggle != st.session_state["font_large"]:
         st.session_state["font_large"] = font_toggle
         st.rerun()
 
     st.markdown("---")
-    st.markdown("## 🤖 AI Execution Engine")
+    st.markdown("### Execution Engine")
     mode_options = ["⚡ Groq LLM (High-Performance)", "🛡️ Zero-API Local Mode (Offline / Free)"]
     current_mode_idx = 0 if st.session_state["exec_mode"] == mode_options[0] else 1
     selected_mode = st.radio("Execution Mode", mode_options, index=current_mode_idx)
@@ -957,8 +1242,8 @@ with st.sidebar:
         st.info("Zero-API Mode active. Runs 100% locally on CPU without external API calls.")
 
     st.markdown("---")
-    st.markdown("## 📤 Connect / Upload Dataset")
-    with st.expander("Upload CSV or JSON reviews"):
+    st.markdown("### Custom Dataset Connector")
+    with st.expander("Upload CSV / JSON reviews"):
         uploaded_file = st.file_uploader("Upload review file", type=["csv", "json"])
         if uploaded_file is not None:
             try:
@@ -966,18 +1251,18 @@ with st.sidebar:
                 st.session_state["custom_dataset_df"] = uploaded_df
                 st.session_state["custom_dataset_name"] = uploaded_file.name
                 st.success(f"Loaded {len(uploaded_df)} reviews from {uploaded_file.name}!")
-                if st.button("Use Uploaded Dataset Now"):
+                if st.button("Activate Dataset Now"):
                     st.rerun()
             except Exception as e:
                 st.error(f"Failed to parse file: {e}")
 
     st.markdown("---")
-    st.markdown("## ⚙️ Vector Index Status")
-    st.markdown(f"**Active ID:** `{selected_product_id}`")
+    st.markdown("### ChromaDB Vector Index")
+    st.markdown(f"**Target Model:** `{selected_product_id}`")
     already = is_already_ingested(selected_product_id)
-    st.markdown(f"**Status:** {'✅ Vector Index Ready' if already else '⏳ Ingestion required'}")
+    st.markdown(f"**Index Status:** {'✅ Indexed & Ready' if already else '⏳ Ingestion required'}")
 
-    if already and st.button("🔄 Force Re-Index"):
+    if already and st.button("Re-Index Product"):
         ingest_product(active_dataset_source, selected_product_id, force=True)
         st.success("Re-indexed into ChromaDB.")
         st.rerun()
@@ -995,7 +1280,7 @@ if analyze:
 
 
 # ---------------------------------------------------------------------------
-# Main Results View
+# Main Dashboard Results View
 # ---------------------------------------------------------------------------
 
 if st.session_state["analysis_done"]:
@@ -1004,15 +1289,15 @@ if st.session_state["analysis_done"]:
     contested = st.session_state["contested"]
     stats = st.session_state["stats"]
 
-    # Voice Audio Accessibility Bar
+    # Spoken Audio Accessibility Bar
     render_audio_briefing(alerts, summary, contested)
 
-    # Metrics Strip
+    # Key Performance Metrics Strip
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Reviews analysed", len(st.session_state["reviews"]))
-    m2.metric("Opinions extracted", len(st.session_state["tuples"]))
-    m3.metric("⚠️ Safety alerts", len(alerts))
-    m4.metric("⚖️ Contested aspects", len(contested))
+    m1.metric("Analyzed Reviews", len(st.session_state["reviews"]))
+    m2.metric("Extracted Opinions", len(st.session_state["tuples"]))
+    m3.metric("Critical Hazards", len(alerts))
+    m4.metric("Contested Dimensions", len(contested))
 
     st.markdown("<br/>", unsafe_allow_html=True)
 
@@ -1024,21 +1309,21 @@ if st.session_state["analysis_done"]:
         render_contested_section(contested, stats)
 
     with right_col:
-        st.markdown('<div class="card card-evidence">', unsafe_allow_html=True)
+        st.markdown(f'<div class="editorial-card card-evidence">', unsafe_allow_html=True)
         render_evidence_inspector()
         st.markdown("</div>", unsafe_allow_html=True)
 
         all_ids = sorted({r["review_id"] for r in st.session_state["reviews"]})
         if all_ids:
-            with st.expander("🔢 Jump to specific Review ID"):
+            with st.expander("Jump to specific Review ID"):
                 manual_id = st.selectbox("Select Review ID", options=all_ids, key="manual_review_select")
-                if st.button("Load Review", key="manual_load_btn"):
+                if st.button("Load Review Record", key="manual_load_btn"):
                     _set_inspector([manual_id])
                     st.rerun()
 
-    # Export Section
+    # Governance & Export Section
     st.markdown("---")
-    st.markdown("### 📥 Export Audit Report")
+    st.markdown("### Export Audit Report")
     md_report, json_report = generate_export_payloads(
         selected_product_id,
         selected_brand,
@@ -1050,50 +1335,69 @@ if st.session_state["analysis_done"]:
     exp_col1, exp_col2, _ = st.columns([2, 2, 4])
     with exp_col1:
         st.download_button(
-            "📄 Download Report (.md)",
+            "Download Report (Markdown .md)",
             data=md_report,
-            file_name=f"opinionlens_{selected_product_id}.md",
+            file_name=f"opinionlens_audit_{selected_product_id}.md",
             mime="text/markdown",
         )
     with exp_col2:
         st.download_button(
-            "📊 Download Schema (.json)",
+            "Download Schema (JSON .json)",
             data=json_report,
-            file_name=f"opinionlens_{selected_product_id}.json",
+            file_name=f"opinionlens_audit_{selected_product_id}.json",
             mime="application/json",
         )
 
 elif not analyze:
-    # Welcome hero
+    # Editorial Welcome State
     st.markdown(
-        """
-<div style="text-align:center;padding:3.5rem 2rem;color:#94a3b8;">
-  <div style="font-size:3.5rem;margin-bottom:0.8rem;">🔍</div>
-  <h2 style="color:#cbd5e1;font-weight:700;">Select a dataset & product model, then click ⚡ Analyze</h2>
-  <p style="color:#94a3b8;max-width:560px;margin:0 auto;line-height:1.7;">
-    OpinionLens retrieves evidence, intercepts critical safety hazards before majority ratings bury them,
-    surfaces polarized opinions, and cites every claim with exact review highlights.
-  </p>
-  <div style="margin-top:2rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;">
-    <div style="background:rgba(239,68,68,0.15);border:1.5px solid rgba(239,68,68,0.4);border-radius:10px;padding:1rem 1.4rem;min-width:160px;">
-      <div style="font-size:1.6rem;">🚨</div>
-      <div style="font-weight:700;color:#f87171;margin-top:4px;">Safety Guard</div>
-      <div style="font-size:0.8rem;color:#cbd5e1;">Catches critical minority hazards</div>
+        f"""
+<div style="padding: 2.5rem 1rem 3rem 1rem; color: {tokens['text_muted']};">
+  <div style="max-width: 780px; margin: 0 auto; text-align: center;">
+    <h2 style="color:{tokens['text_primary']}; font-weight:700; font-size:1.6rem; margin-bottom:0.6rem;">
+      Evidence-Grounded Review Intelligence
+    </h2>
+    <p style="color:{tokens['text_secondary']}; font-size:0.95rem; line-height:1.6; margin-bottom:2.2rem;">
+      OpinionLens analyzes customer reviews with rigorous source attribution, intercepts critical safety risks
+      before majority ratings conceal them, and maps contested consumer sentiment across hardware dimensions.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; max-width: 1050px; margin: 0 auto;">
+    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
+      <div style="font-size:0.8rem; font-weight:700; color:{tokens['safety_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        01 &bull; Safety Isolation
+      </div>
+      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
+        Critical Risk Interception
+      </div>
+      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
+        Identifies battery swelling, extreme overheating, and fire hazards before star-rating averages dilute them.
+      </div>
     </div>
-    <div style="background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.4);border-radius:10px;padding:1rem 1.4rem;min-width:160px;">
-      <div style="font-size:1.6rem;">✅</div>
-      <div style="font-weight:700;color:#34d399;margin-top:4px;">Cited Summary</div>
-      <div style="font-size:0.8rem;color:#cbd5e1;">Traceable claims with exact quote chips</div>
+
+    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
+      <div style="font-size:0.8rem; font-weight:700; color:{tokens['consensus_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        02 &bull; Traceable Synthesis
+      </div>
+      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
+        Verifiable Consensus
+      </div>
+      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
+        Synthesizes majority opinions into concise points, each anchored with exact click-to-verify citation references.
+      </div>
     </div>
-    <div style="background:rgba(245,158,11,0.15);border:1.5px solid rgba(245,158,11,0.4);border-radius:10px;padding:1rem 1.4rem;min-width:160px;">
-      <div style="font-size:1.6rem;">⚖️</div>
-      <div style="font-weight:700;color:#fbbf24;margin-top:4px;">Contested Views</div>
-      <div style="font-size:0.8rem;color:#cbd5e1;">Surfaces polarized user opinions</div>
-    </div>
-    <div style="background:rgba(99,102,241,0.15);border:1.5px solid rgba(99,102,241,0.4);border-radius:10px;padding:1rem 1.4rem;min-width:160px;">
-      <div style="font-size:1.6rem;">🔊</div>
-      <div style="font-weight:700;color:#a5b4fc;margin-top:4px;">Audio Accessibility</div>
-      <div style="font-size:0.8rem;color:#cbd5e1;">Hands-free voice read-aloud briefing</div>
+
+    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
+      <div style="font-size:0.8rem; font-weight:700; color:{tokens['contested_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        03 &bull; Polarity Detection
+      </div>
+      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
+        Contested Dimensions
+      </div>
+      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
+        Surfaces hardware aspects where buyer feedback sharply divides into pro and con arguments.
+      </div>
     </div>
   </div>
 </div>

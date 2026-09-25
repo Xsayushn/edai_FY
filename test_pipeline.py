@@ -24,6 +24,10 @@ def run_tests():
     assert len(df_a) > 0, "Amazon dataset empty!"
     print(f"    Amazon dataset: {len(df_a)} reviews loaded successfully.")
 
+    df_l = load_universal_dataset("dataset/laptops.csv")
+    assert len(df_l) > 0, "Laptops dataset empty!"
+    print(f"    Laptops dataset: {len(df_l)} reviews loaded successfully.")
+
     print("\n>>> 2. Testing Offline Aspect-Sentiment Extraction...")
     # Convert first 20 reviews to list of dicts
     reviews = df_s.head(20).to_dict(orient="records")
