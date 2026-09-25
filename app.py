@@ -134,6 +134,13 @@ if theme_mode == "✦ High-Contrast (WCAG AAA)":
         "btn_primary_text": "#000000",
         "btn_primary_hover": "#e2e8f0",
         "btn_primary_border": "#ffffff",
+        "btn_secondary_bg": "#111111",
+        "btn_secondary_text": "#ffffff",
+        "btn_secondary_hover": "#222222",
+        "btn_secondary_border": "#ffffff",
+        "input_bg": "#000000",
+        "input_text": "#ffffff",
+        "input_border": "#ffffff",
         "chart_font": "#ffffff",
         "chart_zero": "#ffffff",
         "tag_bg": "#111111",
@@ -177,6 +184,13 @@ elif theme_mode == "✦ Obsidian Matte Dark":
         "btn_primary_text": "#ffffff",
         "btn_primary_hover": "#1d4ed8",
         "btn_primary_border": "#3b82f6",
+        "btn_secondary_bg": "#1e293b",
+        "btn_secondary_text": "#f8fafc",
+        "btn_secondary_hover": "#334155",
+        "btn_secondary_border": "#334155",
+        "input_bg": "#111827",
+        "input_text": "#f8fafc",
+        "input_border": "#334155",
         "chart_font": "#94a3b8",
         "chart_zero": "rgba(255, 255, 255, 0.15)",
         "tag_bg": "#1e293b",
@@ -221,6 +235,13 @@ else:
         "btn_primary_text": "#ffffff",
         "btn_primary_hover": "#1e293b",
         "btn_primary_border": "#0f172a",
+        "btn_secondary_bg": "#ffffff",
+        "btn_secondary_text": "#0f172a",
+        "btn_secondary_hover": "#f8fafc",
+        "btn_secondary_border": "#cbd5e1",
+        "input_bg": "#ffffff",
+        "input_text": "#0f172a",
+        "input_border": "#cbd5e1",
         "chart_font": "#475569",
         "chart_zero": "#cbd5e1",
         "tag_bg": "#f1f5f9",
@@ -243,9 +264,101 @@ html, body, [class*="css"] {{
     color: {tokens["text_primary"]};
 }}
 
+/* Sidebar Contrast Guarantee */
 [data-testid="stSidebar"] {{
-    background-color: {tokens["sidebar_bg"]};
-    border-right: 1px solid {tokens["border_color"]};
+    background-color: {tokens["sidebar_bg"]} !important;
+    border-right: 1px solid {tokens["border_color"]} !important;
+}}
+
+[data-testid="stSidebar"] *,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] span,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h4 {{
+    color: {tokens["text_primary"]} !important;
+}}
+
+[data-testid="stSidebar"] h3 {{
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: {tokens["text_primary"]} !important;
+    margin-top: 0.6rem !important;
+    margin-bottom: 0.4rem !important;
+}}
+
+[data-testid="stSidebar"] hr {{
+    border-color: {tokens["border_color"]} !important;
+    opacity: 0.6;
+}}
+
+/* Global Widget Labels */
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] span,
+[data-testid="stWidgetLabel"] label,
+label[data-testid="stWidgetLabel"] {{
+    color: {tokens["text_primary"]} !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+}}
+
+/* Inputs & Dropdown Selects */
+div[data-baseweb="select"] > div {{
+    background-color: {tokens["input_bg"]} !important;
+    color: {tokens["input_text"]} !important;
+    border: 1px solid {tokens["input_border"]} !important;
+    border-radius: 6px !important;
+}}
+
+div[data-baseweb="select"] *,
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div,
+div[data-baseweb="select"] p {{
+    color: {tokens["input_text"]} !important;
+}}
+
+div[data-baseweb="select"] svg {{
+    fill: {tokens["input_text"]} !important;
+}}
+
+div[data-baseweb="input"] {{
+    background-color: {tokens["input_bg"]} !important;
+    border: 1px solid {tokens["input_border"]} !important;
+    border-radius: 6px !important;
+}}
+
+div[data-baseweb="input"] input {{
+    background-color: {tokens["input_bg"]} !important;
+    color: {tokens["input_text"]} !important;
+    border: none !important;
+    padding: 0.45rem 0.75rem !important;
+}}
+
+div[data-baseweb="input"] input::placeholder {{
+    color: {tokens["text_muted"]} !important;
+}}
+
+/* Dropdown popover list items */
+div[data-baseweb="popover"],
+ul[role="listbox"] {{
+    background-color: {tokens["card_bg"]} !important;
+    border: 1px solid {tokens["border_color"]} !important;
+}}
+
+ul[role="listbox"] li {{
+    background-color: {tokens["card_bg"]} !important;
+    color: {tokens["text_primary"]} !important;
+}}
+
+ul[role="listbox"] li:hover {{
+    background-color: {tokens["border_subtle"]} !important;
 }}
 
 /* ── Top Editorial Brand Bar ── */
@@ -485,22 +598,68 @@ html, body, [class*="css"] {{
 }}
 
 /* ── Buttons & Action Styling ── */
-.stButton > button {{
-    background-color: {tokens["btn_primary_bg"]} !important;
-    color: {tokens["btn_primary_text"]} !important;
-    border: 1px solid {tokens["btn_primary_border"]} !important;
+/* Secondary Buttons (Presets, Topic Chips, Action Toggles) */
+.stButton > button,
+button[kind="secondary"] {{
+    background-color: {tokens["btn_secondary_bg"]} !important;
+    color: {tokens["btn_secondary_text"]} !important;
+    border: 1px solid {tokens["btn_secondary_border"]} !important;
     border-radius: 6px !important;
     font-weight: 600 !important;
-    font-size: 0.86rem !important;
-    padding: 0.4rem 1.1rem !important;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    font-size: 0.83rem !important;
+    padding: 0.4rem 0.85rem !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
     transition: all 0.15s ease-in-out !important;
 }}
 
-.stButton > button:hover {{
-    background-color: {tokens["btn_primary_hover"]} !important;
+.stButton > button:hover,
+button[kind="secondary"]:hover {{
+    background-color: {tokens["btn_secondary_hover"]} !important;
+    border-color: {tokens["border_color"]} !important;
     transform: translateY(-1px);
     box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.08) !important;
+}}
+
+/* Force ALL inner text nodes of secondary buttons to match */
+.stButton > button *,
+.stButton > button p,
+.stButton > button span,
+.stButton > button div,
+button[kind="secondary"] *,
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[kind="secondary"] div {{
+    color: {tokens["btn_secondary_text"]} !important;
+    font-weight: 600 !important;
+}}
+
+/* Primary Action Button (Run Audit) */
+button[kind="primary"],
+.stButton > button[kind="primary"] {{
+    background-color: {tokens["btn_primary_bg"]} !important;
+    color: {tokens["btn_primary_text"]} !important;
+    border: 1px solid {tokens["btn_primary_border"]} !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12) !important;
+}}
+
+button[kind="primary"]:hover,
+.stButton > button[kind="primary"]:hover {{
+    background-color: {tokens["btn_primary_hover"]} !important;
+    border-color: {tokens["btn_primary_border"]} !important;
+    transform: translateY(-1px);
+}}
+
+button[kind="primary"] *,
+button[kind="primary"] p,
+button[kind="primary"] span,
+button[kind="primary"] div,
+.stButton > button[kind="primary"] *,
+.stButton > button[kind="primary"] p,
+.stButton > button[kind="primary"] span,
+.stButton > button[kind="primary"] div {{
+    color: {tokens["btn_primary_text"]} !important;
+    font-weight: 700 !important;
 }}
 
 /* ── Metrics Strip ── */
@@ -1442,7 +1601,7 @@ with ctrl_col3:
 
 with ctrl_col4:
     st.markdown("<br/>", unsafe_allow_html=True)
-    analyze = st.button("Run Audit", use_container_width=True)
+    analyze = st.button("Run Audit", use_container_width=True, type="primary")
 
 
 # ---------------------------------------------------------------------------
@@ -1700,59 +1859,40 @@ if st.session_state["analysis_done"]:
 elif not trigger:
     # Editorial Welcome State
     st.markdown(
-        f"""
-<div style="padding: 2.2rem 1rem 2.5rem 1rem; color: {tokens['text_muted']};">
-  <div style="max-width: 780px; margin: 0 auto; text-align: center;">
-    <h2 style="color:{tokens['text_primary']}; font-weight:700; font-size:1.6rem; margin-bottom:0.6rem;">
-      Evidence-Grounded Review Intelligence
-    </h2>
-    <p style="color:{tokens['text_secondary']}; font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">
-      OpinionLens analyzes customer reviews with rigorous source attribution, intercepts critical safety risks
-      before majority ratings conceal them, and maps contested consumer sentiment across hardware dimensions.
-    </p>
-  </div>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; max-width: 1050px; margin: 0 auto;">
-    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
-      <div style="font-size:0.8rem; font-weight:700; color:{tokens['safety_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
-        01 &bull; Safety Isolation
-      </div>
-      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
-        Critical Risk Interception
-      </div>
-      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
-        Identifies battery swelling, extreme overheating, and fire hazards before star-rating averages dilute them.
-      </div>
-    </div>
-
-    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
-      <div style="font-size:0.8rem; font-weight:700; color:{tokens['consensus_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
-        02 &bull; Traceable Synthesis
-      </div>
-      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
-        Verifiable Consensus
-      </div>
-      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
-        Synthesizes majority opinions into concise points, each anchored with exact click-to-verify citation references.
-      </div>
-    </div>
-
-    <div style="background:{tokens['card_bg']}; border:1px solid {tokens['border_color']}; border-radius:8px; padding:1.2rem 1.4rem;">
-      <div style="font-size:0.8rem; font-weight:700; color:{tokens['contested_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
-        03 &bull; Polarity Detection
-      </div>
-      <div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">
-        Contested Dimensions
-      </div>
-      <div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">
-        Surfaces hardware aspects where buyer feedback sharply divides into pro and con arguments.
-      </div>
-    </div>
-  </div>
-</div>
-""",
+        f"""<div style="padding: 1.5rem 1rem 1.4rem 1rem; text-align: center; max-width: 800px; margin: 0 auto;">
+<h2 style="color:{tokens['text_primary']}; font-weight:700; font-size:1.6rem; margin-bottom:0.6rem;">Evidence-Grounded Review Intelligence</h2>
+<p style="color:{tokens['text_secondary']}; font-size:0.95rem; line-height:1.6; margin-bottom:1.5rem;">
+OpinionLens analyzes customer reviews with rigorous source attribution, intercepts critical safety risks before majority ratings conceal them, and maps contested consumer sentiment across hardware dimensions.
+</p>
+</div>""",
         unsafe_allow_html=True,
     )
+
+    wc1, wc2, wc3 = st.columns(3)
+    with wc1:
+        with st.container(border=True):
+            st.markdown(
+                f"""<div style="font-size:0.78rem; font-weight:700; color:{tokens['safety_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">01 &bull; Safety Isolation</div>
+<div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">Critical Risk Interception</div>
+<div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">Identifies battery swelling, extreme overheating, and fire hazards before star-rating averages dilute them.</div>""",
+                unsafe_allow_html=True,
+            )
+    with wc2:
+        with st.container(border=True):
+            st.markdown(
+                f"""<div style="font-size:0.78rem; font-weight:700; color:{tokens['consensus_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">02 &bull; Traceable Synthesis</div>
+<div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">Verifiable Consensus</div>
+<div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">Synthesizes majority opinions into concise points, each anchored with exact click-to-verify citation references.</div>""",
+                unsafe_allow_html=True,
+            )
+    with wc3:
+        with st.container(border=True):
+            st.markdown(
+                f"""<div style="font-size:0.78rem; font-weight:700; color:{tokens['contested_title']}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">03 &bull; Polarity Detection</div>
+<div style="font-weight:600; color:{tokens['text_primary']}; font-size:1rem; margin-bottom:0.3rem;">Contested Dimensions</div>
+<div style="font-size:0.83rem; color:{tokens['text_muted']}; line-height:1.5;">Surfaces hardware aspects where buyer feedback sharply divides into pro and con arguments.</div>""",
+                unsafe_allow_html=True,
+            )
 
 # ---------------------------------------------------------------------------
 # UI — Evaluation & Project Defense Guide (Collapsible Drawer)
