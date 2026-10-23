@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import "./globals.css";
@@ -11,11 +10,11 @@ const GSC_TOKEN = process.env.NEXT_PUBLIC_GSC_VERIFICATION || "opinionlens-gsc-v
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "OpinionLens · Explainable RAG for Consumer Product Reviews",
+    default: "OpinionLens — Explainable & Safe RAG for Opinion Summarization",
     template: "%s · OpinionLens",
   },
   description:
-    "Enterprise-grade explainable RAG engine auditing hardware reviews with 100% cited evidence, polarized consensus detection, and critical-minority safety guardrails.",
+    "Explainable and safe RAG framework for opinion summarization featuring Critical-Minority Safety Guard, Attributed Consensus, Polarization Spectra, and Live Evidence Inspector.",
   keywords: [
     "OpinionLens",
     "Explainable RAG",
@@ -36,23 +35,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: "OpinionLens",
-    title: "OpinionLens · Explainable RAG for Consumer Product Reviews",
+    title: "OpinionLens — Explainable & Safe RAG for Opinion Summarization",
     description:
-      "Enterprise-grade explainable RAG engine auditing hardware reviews with 100% cited evidence and critical-minority safety guardrails.",
+      "Explainable and safe RAG framework for opinion summarization featuring Critical-Minority Safety Guard, Attributed Consensus, Polarization Spectra, and Live Evidence Inspector.",
     images: [
       {
         url: "/og-image.webp",
         width: 1200,
         height: 630,
-        alt: "OpinionLens Explainable RAG and Safety Audit Platform",
+        alt: "OpinionLens Stitch Mocha Glassmorphism UI",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpinionLens · Explainable RAG for Consumer Product Reviews",
+    title: "OpinionLens — Explainable & Safe RAG for Opinion Summarization",
     description:
-      "Enterprise-grade explainable RAG engine auditing hardware reviews with 100% cited evidence and critical-minority safety guardrails.",
+      "Explainable and safe RAG framework for opinion summarization featuring Critical-Minority Safety Guard, Attributed Consensus, Polarization Spectra, and Live Evidence Inspector.",
     images: ["/og-image.webp"],
     creator: "@opinionlens",
   },
@@ -117,8 +116,20 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
+        {/* Preconnect & Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
+
         {/* Organization Schema (Requirement 14) */}
         <script
           type="application/ld+json"
@@ -145,164 +156,26 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
-        <div className="ambient-mesh" aria-hidden="true">
-          <div className="mesh-orb-crimson" />
-          <div className="mesh-orb-lime" />
-          <div className="mesh-orb-amber" />
-        </div>
+      <body className="bg-[#08090d] text-[#F9EAD7] font-sans antialiased min-h-screen relative overflow-x-hidden selection:bg-[#BFE23A] selection:text-black">
+        {children}
 
-        <div className="page-wrapper">
-          {/* Header Navigation (Requirement 11: Alt text, Requirement 12: WebP images, Requirement 16: Internal links) */}
-          <header className="site-header">
-            <div className="container nav-container">
-              <Link href="/" className="nav-brand" title="OpinionLens Homepage">
-                <Image
-                  src="/logo.webp"
-                  alt="OpinionLens shield emblem logo"
-                  width={34}
-                  height={34}
-                  priority
-                  style={{ borderRadius: "8px" }}
-                />
-                <span>OpinionLens</span>
-              </Link>
-
-              <nav aria-label="Main Navigation">
-                <ul className="nav-links">
-                  <li>
-                    <Link href="/" className="nav-link">
-                      Audit Center
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/#catalog" className="nav-link">
-                      Hardware Catalog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/#safety" className="nav-link">
-                      Safety Guard
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/privacy" className="nav-link">
-                      Privacy Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="nav-link">
-                      Contact Ops
-                    </Link>
-                  </li>
-                </ul>
-              </nav>
-
-              <div>
-                <Link href="/#catalog" className="btn btn-lime">
-                  Inspect Hardware
-                </Link>
-              </div>
+        {/* Sleek Dark Internal Links Footer (Requirement 16) */}
+        <footer className="relative z-20 border-t border-white/10 bg-[#08090d]/90 backdrop-blur-xl py-8 mt-16 text-xs text-[#9E9485]">
+          <div className="max-w-[1536px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="font-display font-bold text-sm text-[#F9EAD7]">OpinionLens</span>
+              <span className="text-[#8E8880]">·</span>
+              <span>Explainable &amp; Safe RAG for Opinion Summarization</span>
             </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="main-content" id="main-content">
-            {children}
-          </main>
-
-          {/* Site Footer (Internal Links Mesh, SEO & Semantic Structure) */}
-          <footer className="site-footer">
-            <div className="container">
-              <div className="footer-grid">
-                <div className="footer-col">
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-                    <Image
-                      src="/logo.webp"
-                      alt="OpinionLens logo icon"
-                      width={28}
-                      height={28}
-                      loading="lazy"
-                      style={{ borderRadius: "6px" }}
-                    />
-                    <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "1.1rem" }}>
-                      OpinionLens
-                    </span>
-                  </div>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", maxWidth: "340px", marginBottom: "18px" }}>
-                    Explainable & Safe RAG system for high-stakes consumer hardware review synthesis. 100% cited evidence, zero hallucination tolerance.
-                  </p>
-                  <span className="badge badge-lime">Status: RAG Cluster Active</span>
-                </div>
-
-                <div className="footer-col">
-                  <h4>Product Audits</h4>
-                  <ul>
-                    <li>
-                      <Link href="/audit/B000063W3B">Toshiba Satellite 5105</Link>
-                    </li>
-                    <li>
-                      <Link href="/audit/B00004Z5M1">KDS Valiant 6480IPT</Link>
-                    </li>
-                    <li>
-                      <Link href="/audit/B00000J052">Kingston 64MB SODIMM</Link>
-                    </li>
-                    <li>
-                      <Link href="/#catalog">All Verified Datasets</Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="footer-col">
-                  <h4>Architecture</h4>
-                  <ul>
-                    <li>
-                      <Link href="/#safety">Safety Guard Engine</Link>
-                    </li>
-                    <li>
-                      <Link href="/#methodology">Vector Grounding</Link>
-                    </li>
-                    <li>
-                      <Link href="/#contention">Polarization Radar</Link>
-                    </li>
-                    <li>
-                      <Link href="/#offline-mode">Hybrid Groq & Offline</Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="footer-col">
-                  <h4>Governance & Help</h4>
-                  <ul>
-                    <li>
-                      <Link href="/privacy">Privacy & AI Ethics</Link>
-                    </li>
-                    <li>
-                      <Link href="/contact">Contact & Inquiry Desk</Link>
-                    </li>
-                    <li>
-                      <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                        GitHub Repository
-                      </a>
-                    </li>
-                    <li>
-                      <a href="/sitemap.xml">XML Sitemap</a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="footer-bottom">
-                <p>© {new Date().getFullYear()} OpinionLens Inc. All rights reserved. Strict attribution enforced.</p>
-                <div style={{ display: "flex", gap: "20px" }}>
-                  <Link href="/privacy">Privacy Policy</Link>
-                  <Link href="/contact">Audit Request</Link>
-                  <a href="/robots.txt">robots.txt</a>
-                </div>
-              </div>
+            <div className="flex items-center gap-6">
+              <Link href="/privacy" className="hover:text-[#BFE23A] transition-colors">Privacy Policy</Link>
+              <Link href="/contact" className="hover:text-[#BFE23A] transition-colors">Contact Ops</Link>
+              <Link href="/audit/B000063W3B" className="hover:text-[#BFE23A] transition-colors">Hardware Catalog</Link>
+              <a href="/sitemap.xml" className="hover:text-[#BFE23A] transition-colors">Sitemap</a>
+              <a href="/robots.txt" className="hover:text-[#BFE23A] transition-colors">Robots</a>
             </div>
-          </footer>
-        </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

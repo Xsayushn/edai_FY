@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 
 interface HeaderProps {
   onOpenAuditModal: () => void;
@@ -37,48 +36,34 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuditModal, auditScore }) 
 
         {/* Center Navigation Glass Segmented Pills */}
         <nav aria-label="Main Navigation" className="hidden lg:flex items-center gap-1.5 p-1 rounded-full glass-pill-surface">
-          <Link
+          <a
             className="px-4 py-1.5 rounded-full text-xs font-semibold bg-[#F9EAD7]/20 text-white border border-[#F9EAD7]/40 shadow-[0_2px_14px_rgba(249,234,215,0.25),inset_0_1px_1px_rgba(255,255,255,0.5)] flex items-center gap-1.5 transition-all duration-300 hover:scale-105"
-            href="/#consensus"
+            href="#consensus"
           >
             <span className="material-symbols-outlined text-sm text-[#BFE23A]">check_circle</span>
             Consensus Matrix
-          </Link>
-          <Link
+          </a>
+          <a
             className="px-4 py-1.5 rounded-full text-xs font-medium text-[#F9EAD7]/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5"
-            href="/#divergence"
+            href="#divergence"
           >
             <span className="material-symbols-outlined text-sm">tune</span>
             Divergence Spectra
-          </Link>
-          <Link
+          </a>
+          <a
             className="px-4 py-1.5 rounded-full text-xs font-medium text-[#F9EAD7]/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5"
-            href="/#audit"
+            href="#audit"
           >
             <span className="material-symbols-outlined text-sm">verified</span>
             Audit Provenance
-          </Link>
-          <Link
+          </a>
+          <a
             className="px-4 py-1.5 rounded-full text-xs font-semibold text-[#FF332C] hover:bg-[#E10600]/20 transition-all duration-300 hover:scale-105 flex items-center gap-1.5 border border-[#E10600]/40 bg-[#E10600]/10 shadow-[0_0_12px_rgba(225,6,0,0.25)]"
-            href="/#safety"
+            href="#safety"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] animate-ping" />
             Safety Guard
-          </Link>
-          <Link
-            className="px-4 py-1.5 rounded-full text-xs font-medium text-[#F9EAD7]/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5"
-            href="/contact"
-          >
-            <span className="material-symbols-outlined text-sm text-[#BFE23A]">contact_support</span>
-            Contact Ops
-          </Link>
-          <Link
-            className="px-4 py-1.5 rounded-full text-xs font-medium text-[#F9EAD7]/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5"
-            href="/privacy"
-          >
-            <span className="material-symbols-outlined text-sm">policy</span>
-            Privacy
-          </Link>
+          </a>
         </nav>
 
         {/* Trailing Action Badges & Repo Audit Button */}
