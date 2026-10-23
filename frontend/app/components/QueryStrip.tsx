@@ -59,7 +59,7 @@ export const QueryStrip: React.FC<QueryStripProps> = ({
             >
               {datasets.map((d) => (
                 <option key={d.brandId} value={d.brandId} className="bg-[#111317] text-[#F9EAD7]">
-                  {d.brandName} ({d.csvFileName})
+                  {d.brandName}
                 </option>
               ))}
             </select>
