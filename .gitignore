@@ -31,3 +31,5 @@ frontend/.next/
 frontend/out/
 node_modules/
 .next/
+opinionlens_ui_source/
+
