@@ -13,9 +13,9 @@ import { PRODUCT_DATASETS, REVIEWS_DATABASE } from "../data/opinionData";
 import { evaluateGitHubRepoEffects } from "../utils/auditComparison";
 
 export default function OpinionLensApp() {
-  const [selectedBrandId, setSelectedBrandId] = useState("lenovo");
-  const [selectedModelId, setSelectedModelId] = useState("MOBE7JXXKS6PWW2C");
-  const [queryText, setQueryText] = useState("battery heating, camera quality, low light");
+  const [selectedBrandId, setSelectedBrandId] = useState("laptops");
+  const [selectedModelId, setSelectedModelId] = useState("MACBOOK_AIR_M2");
+  const [queryText, setQueryText] = useState("fanless thermal throttling, battery life, liquid retina");
   const [selectedReviewId, setSelectedReviewId] = useState("15");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
