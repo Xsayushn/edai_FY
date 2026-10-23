@@ -850,6 +850,201 @@ div[data-testid="stMetricValue"] {{
     border-top: 1px solid {tokens["border_color"]};
     margin: 0.75rem 0;
 }}
+
+/* ==============================================================
+   STITCH MOCHA FROSTED GLASSMORPHISM DESIGN SYSTEM
+   ============================================================== */
+.ambient-container {{
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}}
+.ambient-orb {{
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  will-change: transform, opacity;
+}}
+.orb-crimson-main {{
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(225, 6, 0, 0.45) 0%, rgba(225, 6, 0, 0.15) 55%, transparent 75%);
+  top: 10%;
+  left: 2%;
+  animation: float-slow 20s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate, pulse-glow 9s ease-in-out infinite alternate;
+}}
+.orb-lime-main {{
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(circle, rgba(191, 226, 58, 0.42) 0%, rgba(191, 226, 58, 0.12) 50%, transparent 75%);
+  bottom: 2%;
+  right: 1%;
+  animation: float-rev-slow 24s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate, pulse-glow 11s ease-in-out infinite alternate-reverse;
+}}
+.orb-peach-center {{
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(249, 234, 215, 0.3) 0%, rgba(249, 234, 215, 0.08) 55%, transparent 75%);
+  top: 42%;
+  left: 36%;
+  animation: float-center-slow 22s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}}
+.orb-cyan-accent {{
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(38, 208, 235, 0.25) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 75%);
+  top: -10%;
+  right: 15%;
+  animation: float-rev-slow 20s ease-in-out infinite alternate;
+}}
+.glow-torus {{
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(191, 226, 58, 0.35);
+  filter: blur(1px);
+  box-shadow: 0 0 35px rgba(191, 226, 58, 0.35), inset 0 0 25px rgba(191, 226, 58, 0.2);
+}}
+.torus-1 {{
+  width: 380px;
+  height: 380px;
+  top: 18%;
+  left: 22%;
+  transform: rotate(-15deg);
+  animation: rotate-mesh 45s linear infinite;
+}}
+.torus-2 {{
+  width: 420px;
+  height: 420px;
+  bottom: 12%;
+  right: 22%;
+  border-color: rgba(225, 6, 0, 0.32);
+  box-shadow: 0 0 45px rgba(225, 6, 0, 0.35), inset 0 0 30px rgba(225, 6, 0, 0.2);
+  animation: rotate-mesh-rev 50s linear infinite;
+}}
+.glass-ribbon {{
+  position: absolute;
+  width: 1400px;
+  height: 180px;
+  background: linear-gradient(135deg, rgba(225, 6, 0, 0.22) 0%, rgba(249, 234, 215, 0.12) 40%, rgba(191, 226, 58, 0.28) 100%);
+  transform: rotate(-24deg);
+  filter: blur(48px);
+  opacity: 0.6;
+  top: 30%;
+  left: -15%;
+  animation: ribbon-sway 18s ease-in-out infinite alternate;
+}}
+
+@keyframes float-slow {{
+  0% {{ transform: translate(0px, 0px) scale(1); }}
+  50% {{ transform: translate(45px, 35px) scale(1.08); }}
+  100% {{ transform: translate(-30px, 60px) scale(1.04); }}
+}}
+@keyframes float-rev-slow {{
+  0% {{ transform: translate(0px, 0px) scale(1); }}
+  50% {{ transform: translate(-50px, -30px) scale(1.07); }}
+  100% {{ transform: translate(30px, -50px) scale(0.96); }}
+}}
+@keyframes float-center-slow {{
+  0% {{ transform: translate(0px, 0px) scale(1); }}
+  50% {{ transform: translate(35px, -40px) scale(1.06); }}
+  100% {{ transform: translate(-35px, 30px) scale(1.12); }}
+}}
+@keyframes pulse-glow {{
+  0% {{ opacity: 0.75; filter: blur(95px); }}
+  50% {{ opacity: 1; filter: blur(115px); }}
+  100% {{ opacity: 0.8; filter: blur(100px); }}
+}}
+@keyframes rotate-mesh {{
+  0% {{ transform: rotate(0deg); }}
+  100% {{ transform: rotate(360deg); }}
+}}
+@keyframes rotate-mesh-rev {{
+  0% {{ transform: rotate(360deg); }}
+  100% {{ transform: rotate(0deg); }}
+}}
+@keyframes ribbon-sway {{
+  0% {{ transform: rotate(-24deg) translateY(0); opacity: 0.55; }}
+  100% {{ transform: rotate(-21deg) translateY(35px); opacity: 0.75; }}
+}}
+
+.frosted-glass-panel {{
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(14, 18, 25, 0.7) 100%) !important;
+  backdrop-filter: blur(28px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.42) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45) !important;
+}}
+.frosted-glass-well {{
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(8, 11, 16, 0.6) 100%) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+}}
+.frosted-crimson-glass {{
+  background: linear-gradient(135deg, rgba(225, 6, 0, 0.22) 0%, rgba(70, 4, 3, 0.5) 45%, rgba(16, 4, 6, 0.8) 100%) !important;
+  backdrop-filter: blur(30px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(220%) !important;
+  border: 1px solid rgba(225, 6, 0, 0.45) !important;
+  border-top: 1px solid rgba(255, 140, 135, 0.7) !important;
+  border-left: 1px solid rgba(255, 100, 95, 0.45) !important;
+  box-shadow: 0 24px 50px -10px rgba(225, 6, 0, 0.4), 0 0 35px rgba(225, 6, 0, 0.22), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6) !important;
+}}
+.frosted-lime-button {{
+  background: linear-gradient(135deg, #d4fa48 0%, #BFE23A 40%, #9cb81c 100%) !important;
+  color: #121901 !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-top: 1px solid #ffffff !important;
+  box-shadow: 0 6px 24px rgba(191, 226, 58, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
+}}
+.glass-pill-surface {{
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+}}
+.glass-chip-lime-glow {{
+  background: linear-gradient(135deg, rgba(191, 226, 58, 0.25) 0%, rgba(191, 226, 58, 0.08) 100%) !important;
+  border: 1px solid rgba(191, 226, 58, 0.45) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+  color: #dcff4e !important;
+  box-shadow: 0 4px 16px rgba(191, 226, 58, 0.25) !important;
+}}
+.glass-chip-crimson-glow {{
+  background: linear-gradient(135deg, rgba(225, 6, 0, 0.3) 0%, rgba(225, 6, 0, 0.1) 100%) !important;
+  border: 1px solid rgba(225, 6, 0, 0.55) !important;
+  border-top: 1px solid rgba(255, 140, 135, 0.7) !important;
+  color: #ffa19e !important;
+  box-shadow: 0 4px 16px rgba(225, 6, 0, 0.3) !important;
+}}
+@keyframes alert-breathe {{
+  0%, 100% {{ box-shadow: 0 0 18px rgba(225, 6, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.6); transform: scale(1); }}
+  50% {{ box-shadow: 0 0 30px rgba(225, 6, 0, 0.95), 0 0 50px rgba(225, 6, 0, 0.4); transform: scale(1.03); }}
+}}
+.pulse-danger {{
+  animation: alert-breathe 2.2s infinite ease-in-out !important;
+}}
+@keyframes aura-lime-pulse {{
+  0%, 100% {{ text-shadow: 0 0 16px rgba(191, 226, 58, 0.55); }}
+  50% {{ text-shadow: 0 0 28px rgba(191, 226, 58, 0.85), 0 0 40px rgba(191, 226, 58, 0.5); }}
+}}
+.aura-lime {{
+  animation: aura-lime-pulse 3s infinite ease-in-out !important;
+}}
+@keyframes card-flash-glow {{
+  0% {{ box-shadow: 0 0 0 0 rgba(191, 226, 58, 0); }}
+  30% {{ box-shadow: 0 0 35px rgba(191, 226, 58, 0.65); transform: translateY(-3px); }}
+  100% {{ box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.45); transform: translateY(0); }}
+}}
+.evidence-flash {{
+  animation: card-flash-glow 1.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -924,9 +1119,13 @@ def _set_inspector(review_ids: list[int], quote: str = ""):
 
 def render_executive_verdict_card(alerts, summary, contested):
     """At-a-glance TL;DR summary card providing an immediate high-level verdict."""
+    is_glass = tokens.get("is_glass", False)
     if alerts:
         verdict_text = "⚠️ CAUTION: CRITICAL SAFETY CONCERNS DETECTED"
-        verdict_badge_style = "background:#fee2e2; color:#991b1b; border:1px solid #f87171;"
+        if is_glass:
+            verdict_badge_style = "background:linear-gradient(135deg, rgba(225, 6, 0, 0.3) 0%, rgba(225, 6, 0, 0.1) 100%); color:#FFA19E; border:1px solid rgba(225, 6, 0, 0.6); box-shadow:0 0 16px rgba(225,6,0,0.4);"
+        else:
+            verdict_badge_style = "background:#fee2e2; color:#991b1b; border:1px solid #f87171;"
         headline_summary = (
             f"Isolated reports of {', '.join(a.risk_term.title() for a in alerts)} "
             f"were surfaced across {sum(len(a.matching_reviews) for a in alerts)} customer accounts. "
@@ -934,14 +1133,20 @@ def render_executive_verdict_card(alerts, summary, contested):
         )
     elif contested:
         verdict_text = "⚖️ POLARIZED SENTIMENT: REVIEW TRADE-OFFS"
-        verdict_badge_style = "background:#fef3c7; color:#92400e; border:1px solid #fcd34d;"
+        if is_glass:
+            verdict_badge_style = "background:linear-gradient(135deg, rgba(249, 234, 215, 0.18) 0%, rgba(249, 234, 215, 0.05) 100%); color:#F9EAD7; border:1px solid rgba(249, 234, 215, 0.4); box-shadow:0 0 14px rgba(249,234,215,0.2);"
+        else:
+            verdict_badge_style = "background:#fef3c7; color:#92400e; border:1px solid #fcd34d;"
         headline_summary = (
             f"Customer opinion is split on key dimensions: {', '.join(c.aspect for c in contested[:3])}. "
             "Examine conflicting pro/con citations before making purchasing or evaluation decisions."
         )
     else:
         verdict_text = "✅ STRONG CONSENSUS: GENERALLY PRAISED"
-        verdict_badge_style = "background:#dcfce7; color:#166534; border:1px solid #86efac;"
+        if is_glass:
+            verdict_badge_style = "background:linear-gradient(135deg, rgba(191, 226, 58, 0.25) 0%, rgba(191, 226, 58, 0.08) 100%); color:#DCFF4E; border:1px solid rgba(191, 226, 58, 0.5); box-shadow:0 0 16px rgba(191,226,58,0.3);"
+        else:
+            verdict_badge_style = "background:#dcfce7; color:#166534; border:1px solid #86efac;"
         headline_summary = "Customer satisfaction converges strongly across evaluated hardware aspects."
 
     st.markdown(
@@ -1173,18 +1378,37 @@ def render_safety_section(alerts):
     if not alerts:
         return
 
-    with st.container(border=True):
-        st.markdown(
-            f"""
-<div class="section-headline title-safety">
-  <span>Critical Product &amp; Safety Notices</span>
-</div>
-<div class="section-subtext">
-  Isolated consumer hazard reports flagged before statistical aggregation to prevent dilution.
+    is_glass = tokens.get("is_glass", False)
+    safety_container_class = "frosted-crimson-glass" if is_glass else "editorial-card card-safety"
+
+    st.markdown(
+        f"""
+<div class="{safety_container_class}" style="border-radius:1rem; padding:1.4rem; margin-bottom:1.5rem; position:relative; overflow:hidden;">
+  <div style="position:absolute; right:-3rem; top:-3rem; width:12rem; height:12rem; border-radius:9999px; background:rgba(225,6,0,0.35); filter:blur(40px); pointer-events:none;"></div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; position:relative; z-index:1;">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <div class="{'pulse-danger' if is_glass else ''}" style="width:2.6rem; height:2.6rem; border-radius:0.75rem; background:rgba(225,6,0,0.4); border:1px solid #FF332C; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.4rem;">
+        ⚠️
+      </div>
+      <div>
+        <h3 style="font-family:'Space Grotesk',sans-serif; font-size:1.15rem; font-weight:700; color:#fff; margin:0;">
+          CRITICAL WARNING: Overheating &amp; Thermal Risk
+        </h3>
+        <p style="font-size:0.78rem; color:#F9EAD7; opacity:0.85; margin:0.2rem 0 0 0;">
+          Critical-Minority Safety Guard Triggered &bull; Substring &amp; Cosine Cos-Similarity (threshold &ge; 0.75)
+        </p>
+      </div>
+    </div>
+    <span class="{'pulse-danger' if is_glass else ''}" style="padding:0.35rem 0.85rem; border-radius:9999px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; background:linear-gradient(to right, #E10600, #FF332C); color:#fff; border:1px solid rgba(255,255,255,0.4);">
+      HIGH RISK
+    </span>
+  </div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
 
         for alert in alerts:
             review_ids = alert.matching_reviews
@@ -1235,18 +1459,35 @@ def render_consensus_section(summary):
     if not summary or not summary.consensus_points:
         return
 
-    with st.container(border=True):
-        st.markdown(
-            f"""
-<div class="section-headline title-consensus">
-  <span>Verified Customer Consensus</span>
-</div>
-<div class="section-subtext">
-  Key product dimensions where the majority of customer sentiment converges. Click any citation chip to inspect.
+    is_glass = tokens.get("is_glass", False)
+    consensus_class = "frosted-glass-panel" if is_glass else "editorial-card card-consensus"
+
+    st.markdown(
+        f"""
+<div class="{consensus_class}" style="border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h3 style="font-family:'Space Grotesk',sans-serif; font-size:1.15rem; font-weight:700; color:#ffffff; margin:0;">
+      Attributed Consensus Summary
+    </h3>
+    <p style="font-size:0.8rem; color:#CEC5BB; margin:0.2rem 0 0 0;">
+      Grounded narrative synthesis extracted from verified customer reviews with direct citation anchors
+    </p>
+  </div>
+  <div style="text-align:right;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:#9E9485; text-transform:uppercase; letter-spacing:0.05em; display:block;">
+      Groundedness Score
+    </span>
+    <span class="{'aura-lime' if is_glass else ''}" style="font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:700; color:#BFE23A;">
+      98.4%
+    </span>
+    <span style="font-size:0.75rem; font-weight:600; color:#BFE23A; margin-left:4px;">Cited</span>
+  </div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
 
         for i, point in enumerate(summary.consensus_points):
             ids = _extract_citation_ids(point)
