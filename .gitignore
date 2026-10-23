@@ -1,4 +1,4 @@
-﻿# ── Secrets — NEVER commit these ──────────────────────────────────────
+# ── Secrets — NEVER commit these ──────────────────────────────────────
 .env
 
 # ── ChromaDB vector store (large binary files, rebuilt via ingest.py) ──
@@ -25,7 +25,9 @@ ENV/
 Thumbs.db
 desktop.ini
 
-# ── IDE files ──────────────────────────────────────────────────────────
-.vscode/
-.idea/
-*.swp
+# ── Frontend (Next.js) ────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+node_modules/
+.next/
