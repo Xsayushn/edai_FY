@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OpinionLens — Explainable &amp; Safe RAG for Opinion Summarization</title>
+<!-- Typography & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            peach: {
+              DEFAULT: "#F9EAD7",
+              light: "#FFF6ED",
+              dim: "#D2C4B2",
+              muted: "#9E9485"
+            },
+            lime: {
+              DEFAULT: "#BFE23A",
+              glow: "#D6FF38",
+              dim: "#8EA925",
+              dark: "#202A02"
+            },
+            crimson: {
+              DEFAULT: "#E10600",
+              glow: "#FF332C",
+              deep: "#520200"
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    /* Ambient Background Glow Mesh, Rings & Floating Gradient Ribbons */
+    .ambient-container {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-orb {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(100px);
+      will-change: transform, opacity;
+    }
+
+    .orb-crimson-main {
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(225, 6, 0, 0.45) 0%, rgba(225, 6, 0, 0.15) 55%, transparent 75%);
+      top: 10%;
+      left: 2%;
+      animation: float-slow 20s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate, pulse-glow 9s ease-in-out infinite alternate;
+    }
+
+    .orb-lime-main {
+      width: 720px;
+      height: 720px;
+      background: radial-gradient(circle, rgba(191, 226, 58, 0.42) 0%, rgba(191, 226, 58, 0.12) 50%, transparent 75%);
+      bottom: 2%;
+      right: 1%;
+      animation: float-rev-slow 24s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate, pulse-glow 11s ease-in-out infinite alternate-reverse;
+    }
+
+    .orb-peach-center {
+      width: 580px;
+      height: 580px;
+      background: radial-gradient(circle, rgba(249, 234, 215, 0.3) 0%, rgba(249, 234, 215, 0.08) 55%, transparent 75%);
+      top: 42%;
+      left: 36%;
+      animation: float-center-slow 22s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+    }
+
+    .orb-cyan-accent {
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(38, 208, 235, 0.25) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 75%);
+      top: -10%;
+      right: 15%;
+      animation: float-rev-slow 20s ease-in-out infinite alternate;
+    }
+
+    /* Crisp geometric vector shapes directly underneath glass panels to showcase refraction & dispersion */
+    .glow-torus {
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid rgba(191, 226, 58, 0.35);
+      filter: blur(1px);
+      box-shadow: 0 0 35px rgba(191, 226, 58, 0.35), inset 0 0 25px rgba(191, 226, 58, 0.2);
+    }
+    .torus-1 {
+      width: 380px;
+      height: 380px;
+      top: 18%;
+      left: 22%;
+      transform: rotate(-15deg);
+      animation: rotate-mesh 45s linear infinite;
+    }
+    .torus-2 {
+      width: 420px;
+      height: 420px;
+      bottom: 12%;
+      right: 22%;
+      border-color: rgba(225, 6, 0, 0.32);
+      box-shadow: 0 0 45px rgba(225, 6, 0, 0.35), inset 0 0 30px rgba(225, 6, 0, 0.2);
+      animation: rotate-mesh-rev 50s linear infinite;
+    }
+
+    .glass-ribbon {
+      position: absolute;
+      width: 1400px;
+      height: 180px;
+      background: linear-gradient(135deg, rgba(225, 6, 0, 0.22) 0%, rgba(249, 234, 215, 0.12) 40%, rgba(191, 226, 58, 0.28) 100%);
+      transform: rotate(-24deg);
+      filter: blur(48px);
+      opacity: 0.6;
+      top: 30%;
+      left: -15%;
+      animation: ribbon-sway 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes float-slow {
+      0% { transform: translate(0px, 0px) scale(1); }
+      50% { transform: translate(45px, 35px) scale(1.08); }
+      100% { transform: translate(-30px, 60px) scale(1.04); }
+    }
+    @keyframes float-rev-slow {
+      0% { transform: translate(0px, 0px) scale(1); }
+      50% { transform: translate(-50px, -30px) scale(1.07); }
+      100% { transform: translate(30px, -50px) scale(0.96); }
+    }
+    @keyframes float-center-slow {
+      0% { transform: translate(0px, 0px) scale(1); }
+      50% { transform: translate(35px, -40px) scale(1.06); }
+      100% { transform: translate(-35px, 30px) scale(1.12); }
+    }
+    @keyframes pulse-glow {
+      0% { opacity: 0.75; filter: blur(95px); }
+      50% { opacity: 1; filter: blur(115px); }
+      100% { opacity: 0.8; filter: blur(100px); }
+    }
+    @keyframes rotate-mesh {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes rotate-mesh-rev {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes ribbon-sway {
+      0% { transform: rotate(-24deg) translateY(0); opacity: 0.55; }
+      100% { transform: rotate(-21deg) translateY(35px); opacity: 0.75; }
+    }
+
+    /* ==============================================================
+       TRUE ULTRA-REALISTIC FROSTED GLASSMORPHISM DESIGN SYSTEM
+       ============================================================== */
+
+    /* Glass Master Shell with Hover Micro-Interactions */
+    .frosted-glass-panel {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(14, 18, 25, 0.7) 100%);
+      backdrop-filter: blur(28px) saturate(210%);
+      -webkit-backdrop-filter: blur(28px) saturate(210%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-top: 1px solid rgba(255, 255, 255, 0.42);
+      border-left: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow:
+        0 24px 48px -12px rgba(0, 0, 0, 0.75),
+        0 4px 16px rgba(0, 0, 0, 0.35),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
+      position: relative;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .frosted-glass-panel:hover {
+      border-color: rgba(255, 255, 255, 0.28);
+      border-top-color: rgba(255, 255, 255, 0.55);
+      box-shadow:
+        0 28px 56px -12px rgba(0, 0, 0, 0.82),
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    /* Diagonal glossy light sweep reflection on the card */
+    .frosted-glass-panel::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 55%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 85%, transparent 100%);
+      border-radius: inherit;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .frosted-glass-panel:hover::before {
+      opacity: 1.25;
+    }
+
+    /* Sub-card Nested Glass Wells */
+    .frosted-glass-well {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(8, 11, 16, 0.6) 100%);
+      backdrop-filter: blur(20px) saturate(190%);
+      -webkit-backdrop-filter: blur(20px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow:
+        inset 0 2px 4px 0 rgba(0, 0, 0, 0.45),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+        0 8px 24px -4px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .frosted-glass-well:hover {
+      border-color: rgba(255, 255, 255, 0.24);
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 2px 4px 0 rgba(0, 0, 0, 0.45),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
+        0 14px 28px -4px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Critical Danger Frosted Crimson Glass */
+    .frosted-crimson-glass {
+      background: linear-gradient(135deg, rgba(225, 6, 0, 0.22) 0%, rgba(70, 4, 3, 0.5) 45%, rgba(16, 4, 6, 0.8) 100%);
+      backdrop-filter: blur(30px) saturate(220%);
+      -webkit-backdrop-filter: blur(30px) saturate(220%);
+      border: 1px solid rgba(225, 6, 0, 0.45);
+      border-top: 1px solid rgba(255, 140, 135, 0.7);
+      border-left: 1px solid rgba(255, 100, 95, 0.45);
+      box-shadow:
+        0 24px 50px -10px rgba(225, 6, 0, 0.4),
+        0 0 35px rgba(225, 6, 0, 0.22),
+        inset 0 1px 2px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.6);
+      position: relative;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .frosted-crimson-glass:hover {
+      border-color: rgba(225, 6, 0, 0.65);
+      border-top-color: rgba(255, 170, 165, 0.85);
+      box-shadow:
+        0 30px 60px -10px rgba(225, 6, 0, 0.55),
+        0 0 45px rgba(225, 6, 0, 0.35),
+        inset 0 1px 2px 0 rgba(255, 255, 255, 0.75),
+        inset 0 -1px 2px 0 rgba(0, 0, 0, 0.6);
+    }
+    .frosted-crimson-glass::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Glossy Frosted Lime Button */
+    .frosted-lime-button {
+      background: linear-gradient(135deg, #d4fa48 0%, #BFE23A 40%, #9cb81c 100%);
+      color: #121901;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-top: 1px solid #ffffff;
+      box-shadow:
+        0 6px 24px rgba(191, 226, 58, 0.55),
+        0 1px 3px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.85),
+        inset 0 -2px 4px 0 rgba(0, 0, 0, 0.25);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .frosted-lime-button:hover {
+      background: linear-gradient(135deg, #e3ff68 0%, #cdf23f 40%, #add020 100%);
+      box-shadow:
+        0 8px 32px rgba(191, 226, 58, 0.75),
+        0 0 24px rgba(191, 226, 58, 0.4),
+        inset 0 1px 2px 0 #ffffff;
+      transform: translateY(-1.5px);
+    }
+    .frosted-lime-button:active {
+      transform: scale(0.96);
+    }
+
+    /* Translucent Liquid Glass Chips & Badges */
+    .glass-pill-surface {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-top: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-pill-surface:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 100%);
+      border-color: rgba(255, 255, 255, 0.38);
+      transform: translateY(-1px);
+    }
+
+    .glass-chip-lime-glow {
+      background: linear-gradient(135deg, rgba(191, 226, 58, 0.25) 0%, rgba(191, 226, 58, 0.08) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(191, 226, 58, 0.45);
+      border-top: 1px solid rgba(255, 255, 255, 0.6);
+      color: #dcff4e;
+      box-shadow: 0 4px 16px rgba(191, 226, 58, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .glass-chip-lime-glow:hover {
+      background: linear-gradient(135deg, rgba(191, 226, 58, 0.42) 0%, rgba(191, 226, 58, 0.2) 100%);
+      border-color: rgba(191, 226, 58, 0.8);
+      box-shadow: 0 0 22px rgba(191, 226, 58, 0.6), inset 0 1px 2px #fff;
+      transform: scale(1.05);
+    }
+
+    .glass-chip-crimson-glow {
+      background: linear-gradient(135deg, rgba(225, 6, 0, 0.3) 0%, rgba(225, 6, 0, 0.1) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(225, 6, 0, 0.55);
+      border-top: 1px solid rgba(255, 140, 135, 0.7);
+      color: #ffa19e;
+      box-shadow: 0 4px 16px rgba(225, 6, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .glass-chip-crimson-glow:hover {
+      background: linear-gradient(135deg, rgba(225, 6, 0, 0.5) 0%, rgba(225, 6, 0, 0.25) 100%);
+      border-color: rgba(255, 120, 115, 0.95);
+      box-shadow: 0 0 25px rgba(225, 6, 0, 0.7), inset 0 1px 2px #fff;
+      transform: scale(1.05);
+    }
+
+    /* Glass Input Controls */
+    .glass-input-field {
+      background: linear-gradient(145deg, rgba(18, 22, 30, 0.7) 0%, rgba(9, 12, 17, 0.85) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 1px solid rgba(255, 255, 255, 0.24);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.25s ease;
+    }
+    .glass-input-field:focus {
+      outline: none;
+      border-color: rgba(191, 226, 58, 0.85);
+      box-shadow: 0 0 0 3px rgba(191, 226, 58, 0.25), 0 0 20px rgba(191, 226, 58, 0.2), inset 0 1px 2px rgba(0,0,0,0.4);
+      background: linear-gradient(145deg, rgba(24, 30, 42, 0.85) 0%, rgba(12, 16, 24, 0.92) 100%);
+    }
+
+    /* Dynamic Flash / Highlight on Target Evidence Panel */
+    @keyframes card-flash-glow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(191, 226, 58, 0);
+        border-color: rgba(255, 255, 255, 0.13);
+      }
+      30% {
+        box-shadow: 0 0 35px rgba(191, 226, 58, 0.65), inset 0 0 15px rgba(191, 226, 58, 0.3);
+        border-color: rgba(191, 226, 58, 0.9);
+        transform: translateY(-3px);
+      }
+      100% {
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.45), 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.13);
+        transform: translateY(0);
+      }
+    }
+    .evidence-flash {
+      animation: card-flash-glow 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Critical Safety Guard Breathing Animation */
+    @keyframes alert-breathe {
+      0%, 100% {
+        box-shadow: 0 0 18px rgba(225, 6, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(225, 6, 0, 0.95), 0 0 50px rgba(225, 6, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+        transform: scale(1.03);
+      }
+    }
+    .pulse-danger {
+      animation: alert-breathe 2.2s infinite ease-in-out;
+    }
+
+    /* Shine effect for high risk inspect button */
+    .btn-shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-shine-effect::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 40%;
+      height: 200%;
+      background: linear-gradient(60deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+      transform: rotate(25deg);
+      transition: all 0.6s ease;
+      pointer-events: none;
+    }
+    .btn-shine-effect:hover::after {
+      left: 140%;
+    }
+
+    /* Groundedness Aura Glow */
+    @keyframes aura-lime-pulse {
+      0%, 100% {
+        text-shadow: 0 0 16px rgba(191, 226, 58, 0.55);
+        filter: drop-shadow(0 0 8px rgba(191, 226, 58, 0.35));
+      }
+      50% {
+        text-shadow: 0 0 28px rgba(191, 226, 58, 0.85), 0 0 40px rgba(191, 226, 58, 0.5);
+        filter: drop-shadow(0 0 14px rgba(191, 226, 58, 0.65));
+      }
+    }
+    .aura-lime {
+      animation: aura-lime-pulse 3s infinite ease-in-out;
+    }
+
+    /* Review Tab interactive pills */
+    .review-tab {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .review-tab:hover {
+      transform: scale(1.06);
+    }
+
+    /* Polarization Progress Bar dynamic width expansion */
+    .polarization-bar-fill {
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Accessibility - Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      .ambient-orb,
+      .glow-torus,
+      .glass-ribbon,
+      .pulse-danger,
+      .aura-lime,
+      .evidence-flash {
+        animation: none !important;
+        transition: none !important;
+      }
+      .frosted-glass-well:hover,
+      .glass-chip-lime-glow:hover,
+      .glass-chip-crimson-glow:hover,
+      .review-tab:hover,
+      .frosted-lime-button:hover {
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#08090d] text-peach font-sans antialiased min-h-screen relative overflow-x-hidden selection:bg-lime selection:text-black">
+<!-- ==============================================================
+       LUMINOUS AMBIENT GLOW BACKDROPS & VECTOR GEOMETRY FOR TRUE GLASS REFRACTION
+       ============================================================== -->
+<div class="ambient-container">
+<!-- Huge radiant color blur nodes -->
+<div class="ambient-orb orb-crimson-main"></div>
+<div class="ambient-orb orb-lime-main"></div>
+<div class="ambient-orb orb-peach-center"></div>
+<div class="ambient-orb orb-cyan-accent"></div>
+<!-- Crisp Glowing Rings & Geometric Ribbons behind frosted panels -->
+<div class="glow-torus torus-1"></div>
+<div class="glow-torus torus-2"></div>
+<div class="glass-ribbon"></div>
+</div>
+<!-- ==============================================================
+       TOP FROSTED LIQUID GLASS NAVIGATION BAR
+       ============================================================== -->
+<header class="frosted-glass-panel sticky top-0 z-50 w-full border-b border-white/15 px-4 md:px-8 py-3.5 backdrop-blur-2xl">
+<div class="max-w-[1536px] mx-auto flex items-center justify-between gap-4">
+<!-- Brand & Explanatory Tag -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-white/20 via-white/5 to-lime/30 border border-white/40 flex items-center justify-center shadow-[0_0_20px_rgba(191,226,58,0.35),inset_0_1px_1px_rgba(255,255,255,0.6)] transition-transform duration-300 hover:rotate-6 hover:scale-105">
+<span class="material-symbols-outlined text-lime text-2xl" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-display font-bold text-xl tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.25)]">OpinionLens</span>
+<span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-peach/15 text-peach-light border border-peach/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)]">v2.4</span>
+</div>
+<span class="text-xs font-medium text-peach/75 block">
+            Explainable &amp; Safe RAG for Opinion Summarization
+          </span>
+</div>
+</div>
+<!-- Center Navigation Glass Segmented Pills -->
+<nav class="hidden lg:flex items-center gap-1.5 p-1 rounded-full glass-pill-surface">
+<a class="px-4 py-1.5 rounded-full text-xs font-semibold bg-peach/20 text-white border border-peach/40 shadow-[0_2px_14px_rgba(249,234,215,0.25),inset_0_1px_1px_rgba(255,255,255,0.5)] flex items-center gap-1.5 transition-all duration-300 hover:scale-105" href="#consensus">
+<span class="material-symbols-outlined text-sm text-lime">check_circle</span>
+          Consensus Matrix
+        </a>
+<a class="px-4 py-1.5 rounded-full text-xs font-medium text-peach/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5" href="#divergence">
+<span class="material-symbols-outlined text-sm">tune</span>
+          Divergence Spectra
+        </a>
+<a class="px-4 py-1.5 rounded-full text-xs font-medium text-peach/80 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-105 flex items-center gap-1.5" href="#audit">
+<span class="material-symbols-outlined text-sm">verified</span>
+          Audit Provenance
+        </a>
+<a class="px-4 py-1.5 rounded-full text-xs font-semibold text-crimson-glow hover:bg-crimson/20 transition-all duration-300 hover:scale-105 flex items-center gap-1.5 border border-crimson/40 bg-crimson/10 shadow-[0_0_12px_rgba(225,6,0,0.25)]" href="#safety">
+<span class="w-1.5 h-1.5 rounded-full bg-crimson animate-ping"></span>
+          Safety Guard
+        </a>
+</nav>
+<!-- Trailing Action Badges -->
+<div class="flex items-center gap-3">
+<!-- ChromaDB + Groq Online Status Glass Capsule -->
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass-pill-surface border border-lime/40 text-xs font-mono text-peach shadow-[0_0_15px_rgba(191,226,58,0.2)]">
+<span class="w-2 h-2 rounded-full bg-lime shadow-[0_0_12px_#BFE23A] animate-pulse"></span>
+<span>ChromaDB + Groq Online</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="w-9 h-9 rounded-xl glass-pill-surface flex items-center justify-center text-peach/80 hover:text-white hover:border-white/40 transition-all duration-200 active:scale-95 hover:scale-105" title="Settings">
+<span class="material-symbols-outlined text-lg">tune</span>
+</button>
+<button class="w-9 h-9 rounded-xl glass-pill-surface flex items-center justify-center text-peach/80 hover:text-white hover:border-white/40 transition-all duration-200 active:scale-95 hover:scale-105" title="Vector DB Cache">
+<span class="material-symbols-outlined text-lg">database</span>
+</button>
+</div>
+<!-- User Profile Avatar Pill -->
+<div class="w-9 h-9 rounded-xl glass-pill-surface flex items-center justify-center text-xs font-mono font-bold text-lime border border-lime/40 shadow-[0_0_14px_rgba(191,226,58,0.3)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(191,226,58,0.5)]">
+          AL
+        </div>
+</div>
+</div>
+</header>
+<!-- ==============================================================
+       QUERY & RETRIEVAL PARAMETER STRIP
+       ============================================================== -->
+<section class="relative z-10 frosted-glass-panel border-b border-white/15 px-4 md:px-8 py-4 backdrop-blur-2xl">
+<div class="max-w-[1536px] mx-auto flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+<!-- Brand, Target Model, and RAG Query -->
+<div class="flex flex-wrap lg:flex-nowrap items-center gap-3 flex-1">
+<!-- Brand Selector -->
+<div class="w-full sm:w-auto min-w-[170px]">
+<label class="block text-[11px] font-mono uppercase tracking-wider text-peach/75 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-lime">category</span> Brand Dataset
+          </label>
+<select class="glass-input-field w-full rounded-xl px-3 py-2 text-xs font-medium text-peach focus:text-white cursor-pointer" id="brandSelect">
+<option selected="" value="lenova.csv">Lenovo (lenova.csv)</option>
+<option value="iphone.csv">Apple (iphone.csv)</option>
+<option value="moto.csv">Motorola (moto.csv)</option>
+<option value="redmi.csv">Redmi / Xiaomi (redmi.csv)</option>
+<option value="nokia.csv">Nokia (nokia.csv)</option>
+</select>
+</div>
+<!-- Product Model Selector -->
+<div class="w-full sm:w-auto flex-1 min-w-[280px]">
+<label class="block text-[11px] font-mono uppercase tracking-wider text-peach/75 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-lime">devices</span> Target Product Model
+          </label>
+<select class="glass-input-field w-full rounded-xl px-3 py-2 text-xs font-medium text-peach focus:text-white cursor-pointer truncate" id="productSelect">
+<option selected="" value="MOBE7JXXKS6PWW2C">Lenovo A6000 Plus (MOBE7JXXKS6PWW2C) • 970 Reviews</option>
+<option value="MOBD86V5YFGR2N7Z">Lenovo K3 Note (Black, 16 GB) • 1,240 Reviews</option>
+<option value="MOBEGBG7HZUY2C2A">Lenovo Vibe K5 Plus (Silver, 16 GB) • 810 Reviews</option>
+</select>
+</div>
+<!-- RAG Aspect Query Input -->
+<div class="w-full lg:flex-[1.4] min-w-[270px]">
+<label class="block text-[11px] font-mono uppercase tracking-wider text-peach/75 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-lime">saved_search</span> RAG Aspect Query (or blank for balanced)
+          </label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-base text-peach/60 transition-colors duration-200 group-focus-within:text-lime">search</span>
+<input class="glass-input-field w-full rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-white placeholder:text-peach/40" id="queryInput" placeholder="e.g. battery life, build quality, screen brightness..." type="text" value="battery heating, camera quality, low light"/>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2.5 self-end xl:self-center pt-1">
+<button class="group px-3.5 py-2 rounded-xl glass-pill-surface text-peach/90 hover:text-white hover:border-white/40 transition-all text-xs font-semibold flex items-center gap-1.5 active:scale-95" title="Re-embed &amp; index ChromaDB">
+<span class="material-symbols-outlined text-base transition-transform duration-500 group-hover:rotate-180">refresh</span>
+<span>Re-Index</span>
+</button>
+<button class="frosted-lime-button px-5 py-2 rounded-xl font-display font-semibold text-xs flex items-center gap-2 tracking-wide" id="analyzeBtn">
+<span class="material-symbols-outlined text-base font-bold transition-transform duration-300 group-hover:scale-110">auto_awesome</span>
+<span>Analyze Reviews</span>
+</button>
+</div>
+</div>
+<!-- Live Execution Status Bar with Liquid Frosted Underline -->
+<div class="max-w-[1536px] mx-auto mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center justify-between text-xs font-mono text-peach/70 gap-2">
+<div class="flex flex-wrap items-center gap-4">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-lime shadow-[0_0_10px_#BFE23A]"></span>
+          VectorStore: <strong class="text-white font-semibold">ChromaDB (970 vectors)</strong>
+</span>
+<span class="text-white/20">•</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-lime">bolt</span>
+          Inference Engine: <strong class="text-white font-semibold">Groq LPU (qwen/qwen3.8-27b)</strong>
+</span>
+<span class="text-white/20">•</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-peach">hub</span>
+          Embedder: <strong class="text-white font-semibold">BAAI/bge-small-en-v1.5</strong>
+</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-0.5 rounded-full glass-pill-surface border border-lime/30 text-peach text-[11px] shadow-[0_0_12px_rgba(191,226,58,0.15)] transition-all duration-300 hover:border-lime/60">
+          Latency: <span class="text-lime font-bold">0.84s</span> (Groq Cached)
+        </span>
+</div>
+</div>
+</section>
+<!-- ==============================================================
+       MAIN CANVAS: TWO-PANEL 60% / 40% ARCHITECTURE WITH DEEP GLASS
+       ============================================================== -->
+<main class="relative z-10 max-w-[1536px] mx-auto px-4 md:px-8 py-6">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- ================= LEFT COLUMN (7 cols / 60%) ================= -->
+<section class="lg:col-span-7 space-y-6">
+<!-- 1. CRITICAL-MINORITY SAFETY GUARD (Crimson Glass) -->
+<article class="frosted-crimson-glass rounded-2xl p-6 relative overflow-hidden transition-all duration-300 hover:-translate-y-1" id="safety">
+<!-- Background Radiant Flare inside the card -->
+<div class="absolute -right-16 -top-16 w-52 h-52 rounded-full bg-crimson/35 blur-3xl pointer-events-none animate-pulse"></div>
+<!-- Header -->
+<div class="flex items-start justify-between gap-4 mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="pulse-danger w-11 h-11 rounded-xl bg-crimson/40 border border-crimson-glow flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-display text-lg font-bold text-white tracking-tight flex items-center gap-1.5 drop-shadow-[0_2px_8px_rgba(225,6,0,0.5)]">
+                    CRITICAL WARNING: Overheating &amp; Thermal Risk
+                  </h2>
+</div>
+<p class="text-xs text-peach/85 mt-0.5">
+                  Critical-Minority Safety Guard Triggered • Substring &amp; Cosine Cos-Similarity (threshold ≥ 0.75)
+                </p>
+</div>
+</div>
+<span class="pulse-danger px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-gradient-to-r from-crimson to-crimson-glow text-white border border-white/40 flex items-center gap-1.5 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+              HIGH RISK
+            </span>
+</div>
+<!-- Detected corpus stats & Verbatim Quote (Nested Frosted Dark Glass Well) -->
+<div class="rounded-xl frosted-glass-well p-4 mb-4 relative z-10 border-crimson/35">
+<div class="flex flex-wrap items-center justify-between gap-2 text-xs text-peach/95 mb-2.5 pb-2 border-b border-crimson/25">
+<span class="flex items-center gap-1.5 text-crimson-glow font-medium">
+<span class="material-symbols-outlined text-base">emergency_heat</span>
+                Detected in 4 distinct reviews (<button class="underline hover:text-white transition-colors duration-200" onclick="selectReview('2')">#2</button>, <button class="underline hover:text-white font-bold transition-colors duration-200" onclick="selectReview('15')">#15</button>, <button class="underline hover:text-white transition-colors duration-200" onclick="selectReview('33')">#33</button>, <button class="underline hover:text-white transition-colors duration-200" onclick="selectReview('67')">#67</button>)
+              </span>
+<span class="font-mono text-peach/75">
+                Taxonomy: <strong class="text-peach underline decoration-crimson font-semibold">overheating / thermal expansion</strong>
+</span>
+</div>
+<!-- Verbatim high-risk snippet with glowing frosted crimson highlight -->
+<div class="p-3.5 rounded-lg bg-crimson/25 border-l-4 border-crimson text-peach-light font-mono text-xs leading-relaxed shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+<span class="text-crimson-glow font-bold uppercase tracking-wider block mb-1">Verbatim Corpus Evidence:</span>
+<p class="italic text-white">
+                “device gets dangerously hot while charging and after 10 mins gaming... battery temperature surges past 48°C.”
+              </p>
+</div>
+</div>
+<!-- Action bar -->
+<div class="flex flex-wrap items-center justify-between gap-3 text-xs relative z-10">
+<span class="text-peach/75 font-mono">
+              Rule: Bypasses positive volume threshold (4 alerts vs 840+ positive ratings)
+            </span>
+<button class="btn-shine-effect px-4 py-2 rounded-xl bg-gradient-to-r from-crimson to-crimson-glow text-white font-semibold flex items-center gap-1.5 border border-white/40 hover:brightness-110 shadow-[0_4px_22px_rgba(225,6,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.5)] transition-all duration-300 active:scale-95 hover:scale-105" onclick="selectReview('15')">
+<span class="material-symbols-outlined text-base">visibility</span>
+              Inspect Review #15 In Evidence Panel
+            </button>
+</div>
+</article>
+<!-- 2. ATTRIBUTED CONSENSUS SUMMARY (Translucent Glass Panel) -->
+<article class="frosted-glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1" id="consensus">
+<div class="flex items-center justify-between pb-4 border-b border-white/15 mb-5 relative z-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-lime/20 border border-lime/45 flex items-center justify-center text-lime shadow-[0_0_20px_rgba(191,226,58,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)] transition-transform duration-300 hover:scale-110">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<h2 class="font-display text-lg font-bold text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                  Attributed Consensus Summary
+                </h2>
+<p class="text-xs text-peach/75">
+                  Grounded narrative synthesis extracted from 970 verified reviews with direct citation anchors
+                </p>
+</div>
+</div>
+<!-- Groundedness Metric -->
+<div class="text-right">
+<span class="text-[11px] font-mono text-peach/70 block uppercase tracking-wider">Groundedness Score</span>
+<div class="flex items-center justify-end gap-1">
+<span class="font-display text-2xl font-bold text-lime aura-lime">98.4%</span>
+<span class="text-xs font-semibold text-lime">Cited</span>
+</div>
+</div>
+</div>
+<!-- Structured Bullet Findings with Frosted Glass Citations -->
+<div class="space-y-3.5 relative z-10">
+<!-- Bullet 1 -->
+<div class="group p-4 rounded-xl frosted-glass-well hover:border-lime/40 transition-all flex items-start gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-lime shadow-[0_0_12px_#BFE23A] mt-1.5 shrink-0 transition-transform duration-300 group-hover:scale-125"></span>
+<div class="flex-1">
+<p class="text-sm text-peach-light leading-relaxed">
+                  Battery life provides dependable day-long endurance under standard productivity and media consumption routines, easily lasting 14-16 hours on moderate screen time.
+                </p>
+<div class="mt-2.5 flex items-center gap-2">
+<span class="text-xs font-mono text-peach/60">Verified Citations:</span>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('12')">
+<span class="material-symbols-outlined text-xs">link</span> Review #12
+                  </button>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('34')">
+<span class="material-symbols-outlined text-xs">link</span> Review #34
+                  </button>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-pill-surface text-lime hover:border-lime transition-all duration-200 hover:scale-110" onclick="selectReview('12')" title="Inspect Citations">
+<span class="material-symbols-outlined text-lg">travel_explore</span>
+</button>
+</div>
+<!-- Bullet 2 -->
+<div class="group p-4 rounded-xl frosted-glass-well hover:border-lime/40 transition-all flex items-start gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-lime shadow-[0_0_12px_#BFE23A] mt-1.5 shrink-0 transition-transform duration-300 group-hover:scale-125"></span>
+<div class="flex-1">
+<p class="text-sm text-peach-light leading-relaxed">
+                  Daylight camera performance produces crisp detail and natural saturation across 13MP sensor captures, though optical acuity and dynamic range noticeably degrade in dimly lit rooms.
+                </p>
+<div class="mt-2.5 flex items-center gap-2">
+<span class="text-xs font-mono text-peach/60">Verified Citations:</span>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('4')">
+<span class="material-symbols-outlined text-xs">link</span> Review #4
+                  </button>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('19')">
+<span class="material-symbols-outlined text-xs">link</span> Review #19
+                  </button>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-pill-surface text-lime hover:border-lime transition-all duration-200 hover:scale-110" onclick="selectReview('4')" title="Inspect Citations">
+<span class="material-symbols-outlined text-lg">travel_explore</span>
+</button>
+</div>
+<!-- Bullet 3 -->
+<div class="group p-4 rounded-xl frosted-glass-well hover:border-lime/40 transition-all flex items-start gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-lime shadow-[0_0_12px_#BFE23A] mt-1.5 shrink-0 transition-transform duration-300 group-hover:scale-125"></span>
+<div class="flex-1">
+<p class="text-sm text-peach-light leading-relaxed">
+                  Ergonomic matte polycarbonate chassis remains lightweight and structurally sturdy despite drop wear, accompanied by crisp Dolby dual-speakers praised for audio fidelity.
+                </p>
+<div class="mt-2.5 flex items-center gap-2">
+<span class="text-xs font-mono text-peach/60">Verified Citations:</span>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('23')">
+<span class="material-symbols-outlined text-xs">link</span> Review #23
+                  </button>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('56')">
+<span class="material-symbols-outlined text-xs">link</span> Review #56
+                  </button>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-pill-surface text-lime hover:border-lime transition-all duration-200 hover:scale-110" onclick="selectReview('23')" title="Inspect Citations">
+<span class="material-symbols-outlined text-lg">travel_explore</span>
+</button>
+</div>
+<!-- Bullet 4 (Thermal throttling alert) -->
+<div class="group p-4 rounded-xl frosted-glass-well border-crimson/30 hover:border-crimson/60 transition-all flex items-start gap-3 shadow-[0_0_20px_rgba(225,6,0,0.15)]">
+<span class="w-2.5 h-2.5 rounded-full bg-crimson shadow-[0_0_12px_#E10600] mt-1.5 shrink-0 transition-transform duration-300 group-hover:scale-125"></span>
+<div class="flex-1">
+<p class="text-sm text-peach-light leading-relaxed">
+                  Occasional thermal throttling observed when multi-tasking intensive 3D applications, with frame rates declining during prolonged charging sessions.
+                </p>
+<div class="mt-2.5 flex items-center gap-2">
+<span class="text-xs font-mono text-peach/60">Verified Citations:</span>
+<button class="glass-chip-lime-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-medium flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('7')">
+<span class="material-symbols-outlined text-xs">link</span> Review #7
+                  </button>
+<button class="glass-chip-crimson-glow px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 active:scale-95 transition-all" onclick="selectReview('15')">
+<span class="material-symbols-outlined text-xs">emergency_heat</span> Review #15 (Risk)
+                  </button>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-pill-surface text-crimson hover:border-crimson transition-all duration-200 hover:scale-110" onclick="selectReview('15')" title="Inspect Risk">
+<span class="material-symbols-outlined text-lg">travel_explore</span>
+</button>
+</div>
+</div>
+</article>
+<!-- 3. CONTESTED VIEWPOINTS & POLARIZATION SPECTRA -->
+<article class="frosted-glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1" id="divergence">
+<div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/15 mb-5 relative z-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-peach/15 border border-peach/30 flex items-center justify-center text-peach shadow-[0_0_16px_rgba(249,234,215,0.2),inset_0_1px_1px_rgba(255,255,255,0.4)] transition-transform duration-300 hover:scale-110">
+<span class="material-symbols-outlined text-2xl">balance</span>
+</div>
+<div>
+<h2 class="font-display text-lg font-bold text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                  Contested Viewpoints &amp; Polarization Spectra
+                </h2>
+<p class="text-xs text-peach/75">
+                  Aspect clustering detecting polarized sentiment divergence ratios (N ≥ 4, Ratio ≥ 0.40)
+                </p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-xs font-mono font-semibold glass-pill-surface text-peach flex items-center gap-1.5 border border-peach/40 shadow-[0_0_14px_rgba(249,234,215,0.15)]">
+<span class="w-2 h-2 rounded-full bg-peach shadow-[0_0_8px_#F9EAD7]"></span>
+              Status: 1 CONTESTED ASPECT
+            </span>
+</div>
+<!-- Contested Aspect Widget: Camera Low-Light Quality -->
+<div class="space-y-4 relative z-10">
+<div>
+<div class="flex justify-between items-center text-xs font-mono mb-2">
+<div class="flex items-center gap-2">
+<span class="font-sans font-bold text-sm text-white">Camera Low-Light Quality</span>
+<span class="px-2.5 py-0.5 rounded-full glass-pill-surface border border-peach/30 text-peach text-[11px] transition-all duration-300 hover:border-peach/60">
+                    Contention Ratio: 0.875
+                  </span>
+</div>
+<span class="text-peach/65">15 Extracted Aspect Tuples</span>
+</div>
+<!-- Dual-Rail Frosted Divergence Progress Bar (53.3% Lime Green vs 46.7% Peach/Neutral) -->
+<div class="h-7 w-full rounded-full frosted-glass-well p-1 flex items-center relative overflow-hidden border border-white/20 shadow-inner group cursor-default">
+<!-- Positive Segment (Lime Green Glass) -->
+<div class="polarization-bar-fill h-full rounded-l-full bg-gradient-to-r from-lime-dim to-lime flex items-center px-3.5 justify-start text-[11px] font-bold font-mono text-black shadow-[0_0_16px_rgba(191,226,58,0.5)] transition-all duration-500 group-hover:brightness-110" id="positivePolarizationBar" style="width: 53.3%;">
+                  53.3% Positive (8)
+                </div>
+<!-- Negative Segment (Frosted Peach Glass) -->
+<div class="polarization-bar-fill h-full rounded-r-full bg-gradient-to-r from-peach/15 to-peach/30 flex items-center px-3.5 justify-end text-[11px] font-bold font-mono text-peach-light transition-all duration-500 group-hover:brightness-110" id="negativePolarizationBar" style="width: 46.7%;">
+                  46.7% Negative (7)
+                </div>
+<!-- Center Divider Specular Pin -->
+<div class="absolute left-[53.3%] top-0 bottom-0 w-1 bg-white shadow-[0_0_12px_#ffffff] transition-all duration-500" id="polarizationDivider"></div>
+</div>
+</div>
+<!-- Pro vs Con Perspective Glass Wells -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+<!-- Pro Argument -->
+<div class="p-4 rounded-xl frosted-glass-well border-lime/35 relative flex flex-col justify-between shadow-[0_0_20px_rgba(191,226,58,0.1)] transition-all duration-300 hover:border-lime/60 hover:-translate-y-1">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold text-lime flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">thumb_up</span> Supporting Perspective (8 reviews)
+                    </span>
+<span class="text-[11px] font-mono text-peach/60">Conf: 0.91</span>
+</div>
+<p class="text-xs text-peach-light italic leading-relaxed">
+                    “Photos taken in daylight or well-lit rooms show punchy colors and fast shutter capture with very little motion blur.”
+                  </p>
+</div>
+<div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+<span class="text-peach/65">Corpus citations:</span>
+<div class="flex gap-1.5">
+<button class="px-2 py-0.5 rounded glass-chip-lime-glow text-xs" onclick="selectReview('3')">#3</button>
+<button class="px-2 py-0.5 rounded glass-chip-lime-glow text-xs" onclick="selectReview('18')">#18</button>
+</div>
+</div>
+</div>
+<!-- Con Argument -->
+<div class="p-4 rounded-xl frosted-glass-well border-peach/30 relative flex flex-col justify-between transition-all duration-300 hover:border-peach/60 hover:-translate-y-1">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold text-peach flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">thumb_down</span> Opposing Perspective (7 reviews)
+                    </span>
+<span class="text-[11px] font-mono text-peach/60">Conf: 0.88</span>
+</div>
+<p class="text-xs text-peach-light italic leading-relaxed">
+                    “Indoor night shots look muddy with intense digital noise; post-processing softens details significantly.”
+                  </p>
+</div>
+<div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+<span class="text-peach/65">Corpus citations:</span>
+<div class="flex gap-1.5">
+<button class="px-2 py-0.5 rounded glass-pill-surface text-peach text-xs hover:border-peach/50" onclick="selectReview('9')">#9</button>
+<button class="px-2 py-0.5 rounded glass-pill-surface text-peach text-xs hover:border-peach/50" onclick="selectReview('44')">#44</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- ================= RIGHT COLUMN (5 cols / 40%) ================= -->
+<aside class="lg:col-span-5 space-y-6 lg:sticky lg:top-24" id="audit">
+<!-- EVIDENCE INSPECTOR DRAWER -->
+<div class="frosted-glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5" id="evidenceInspectorBox">
+<!-- Inspector Header -->
+<div class="flex items-center justify-between pb-4 border-b border-white/15 mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-peach/15 border border-peach/35 flex items-center justify-center text-peach shadow-[0_0_16px_rgba(249,234,215,0.2),inset_0_1px_1px_rgba(255,255,255,0.4)] transition-transform duration-300 hover:scale-110">
+<span class="material-symbols-outlined text-2xl">manage_search</span>
+</div>
+<div>
+<h3 class="font-display text-lg font-bold text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                  Evidence Inspector
+                </h3>
+<p class="text-xs text-peach/75">
+                  Raw Flipkart corpus verification
+                </p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-xs font-mono text-lime border border-lime/40 bg-lime/15 flex items-center gap-1.5 shadow-[0_0_12px_rgba(191,226,58,0.25)]">
+<span class="w-1.5 h-1.5 rounded-full bg-lime animate-pulse"></span>
+              Live Traceability
+            </span>
+</div>
+<!-- Audited Review Switcher Tabs -->
+<div class="mb-4 relative z-10">
+<label class="block text-xs font-mono uppercase tracking-wider text-peach/75 mb-2">
+              Audited Review Records:
+            </label>
+<div class="flex flex-wrap gap-1.5" id="reviewTabs">
+<button class="review-tab active px-3 py-1 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-crimson to-crimson-glow text-white border border-white/40 shadow-[0_0_16px_rgba(225,6,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.6)]" id="tab-15" onclick="selectReview('15')">
+                #15 (Risk)
+              </button>
+<button class="review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white" id="tab-2" onclick="selectReview('2')">
+                #2
+              </button>
+<button class="review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white" id="tab-33" onclick="selectReview('33')">
+                #33
+              </button>
+<button class="review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white" id="tab-67" onclick="selectReview('67')">
+                #67
+              </button>
+<button class="review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white" id="tab-12" onclick="selectReview('12')">
+                #12
+              </button>
+<button class="review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white" id="tab-4" onclick="selectReview('4')">
+                #4
+              </button>
+</div>
+</div>
+<!-- Dynamic Review Evidence Container -->
+<div class="space-y-4 relative z-10" id="inspectorContent">
+<!-- Metadata Card -->
+<div class="p-4 rounded-xl frosted-glass-well flex flex-col gap-2 transition-all duration-300" id="metadataCard">
+<div class="flex items-center justify-between">
+<span class="text-sm font-bold text-white drop-shadow-[0_1px_4px_rgba(255,255,255,0.3)]" id="reviewTitle">
+                  Review #15 • Verified Buyer
+                </span>
+<div class="flex items-center text-peach text-sm font-mono" id="starRating">
+                  ★☆☆☆☆ <span class="ml-1 text-xs text-peach/60 font-mono">(1/5)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs font-mono text-peach/85 pt-2 border-t border-white/10">
+<div>
+<span class="text-peach/50 block">Date:</span>
+<span class="text-peach" id="reviewDate">18-Sep-16</span>
+</div>
+<div>
+<span class="text-peach/50 block">Helpful Votes:</span>
+<span class="text-peach" id="reviewVotes">24 of 27 users</span>
+</div>
+<div>
+<span class="text-peach/50 block">Product ID:</span>
+<span class="text-peach">MOBE7JXXKS6PWW2C</span>
+</div>
+<div>
+<span class="text-peach/50 block">Reviewer Hash:</span>
+<span class="text-peach">8f92a4...d01e</span>
+</div>
+</div>
+</div>
+<!-- Full Review Body with Glowing Glass Highlight -->
+<div class="p-4 rounded-xl frosted-glass-well transition-all duration-300" id="bodyCard">
+<div class="flex items-center justify-between text-xs font-mono text-peach/60 mb-2">
+<span>VERBATIM CORPUS BODY</span>
+<span class="text-lime flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-xs">verified</span> Grounded match
+                </span>
+</div>
+<p class="text-xs md:text-sm text-peach leading-relaxed" id="reviewBodyText">
+                I bought this phone during the festive sale. The display and general responsiveness is decent for basic calling and whatsapp, but <mark class="bg-crimson/40 text-white px-2 py-0.5 rounded border border-crimson/70 font-medium shadow-[0_0_18px_rgba(225,6,0,0.65)]">the phone is overheating after 10 mins of use</mark> and charging creates excessive warmth on the rear panel. Very concerned regarding battery degradation over long term. Would advise caution.
+              </p>
+</div>
+<!-- Pydantic Extracted Aspect Tuples Inspector -->
+<div class="p-4 rounded-xl frosted-glass-well transition-all duration-300" id="tuplesCard">
+<div class="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
+<span class="text-xs font-semibold text-white flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-lime">schema</span>
+                  Pydantic Extracted Aspect Tuples
+                </span>
+<span class="text-[11px] font-mono text-peach/50">qwen3.8-27b</span>
+</div>
+<div class="space-y-1.5 font-mono text-xs">
+<div class="flex justify-between p-2 rounded-lg bg-black/40 border border-white/10 shadow-inner">
+<span class="text-peach/60">aspect:</span>
+<span class="text-peach font-semibold" id="tupleAspect">"thermal / battery"</span>
+</div>
+<div class="flex justify-between p-2 rounded-lg bg-black/40 border border-white/10 shadow-inner">
+<span class="text-peach/60">sentiment:</span>
+<span class="text-crimson font-bold" id="tupleSentiment">"Negative"</span>
+</div>
+<div class="flex justify-between p-2 rounded-lg bg-black/40 border border-white/10 shadow-inner">
+<span class="text-peach/60">risk_score:</span>
+<span class="text-crimson font-bold" id="tupleRisk">0.89 (High Risk Alert)</span>
+</div>
+<div class="flex justify-between p-2 rounded-lg bg-black/40 border border-white/10 shadow-inner">
+<span class="text-peach/60">embedding_model:</span>
+<span class="text-peach font-medium" id="tupleModel">BAAI/bge-small-en-v1.5</span>
+</div>
+<div class="flex justify-between p-2 rounded-lg bg-black/40 border border-white/10 shadow-inner">
+<span class="text-peach/60">cosine_similarity:</span>
+<span class="text-lime font-semibold" id="tupleCosine">0.821 (Query alignment)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SHA Provenance Locked Footer -->
+<div class="mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-xs font-mono text-peach/65 relative z-10">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-lime">lock</span>
+              SHA-256 Provenance Locked
+            </span>
+<button class="text-peach hover:text-lime hover:underline transition-colors duration-200">
+              Export Audit Trail (JSON)
+            </button>
+</div>
+</div>
+<!-- Secondary Info Widget: Pipeline Trace -->
+<div class="frosted-glass-panel rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5">
+<h4 class="text-xs font-mono uppercase tracking-wider text-peach font-semibold mb-3 flex items-center gap-2 relative z-10">
+<span class="material-symbols-outlined text-sm text-lime">account_tree</span>
+            RAG Pipeline Workflow Trace
+          </h4>
+<ol class="space-y-2 text-xs font-mono text-peach/85 relative z-10">
+<li class="flex items-center gap-2.5 transition-transform duration-200 hover:translate-x-1">
+<span class="w-5 h-5 rounded-full glass-pill-surface flex items-center justify-center text-[10px] text-peach shrink-0 font-bold border border-white/20">1</span>
+<span>CSV Ingestion filtered by product_id (MOBE7JXXKS6PWW2C)</span>
+</li>
+<li class="flex items-center gap-2.5 transition-transform duration-200 hover:translate-x-1">
+<span class="w-5 h-5 rounded-full glass-pill-surface flex items-center justify-center text-[10px] text-peach shrink-0 font-bold border border-white/20">2</span>
+<span>Retrieval: Aspect mode top-25 cosine vectors (bge-small-en)</span>
+</li>
+<li class="flex items-center gap-2.5 transition-transform duration-200 hover:translate-x-1">
+<span class="w-5 h-5 rounded-full glass-pill-surface flex items-center justify-center text-[10px] text-peach shrink-0 font-bold border border-white/20">3</span>
+<span>Groq LLM extraction (batches of 10) into AspectTuples</span>
+</li>
+<li class="flex items-center gap-2.5 transition-transform duration-200 hover:translate-x-1">
+<span class="w-5 h-5 rounded-full bg-crimson flex items-center justify-center text-[10px] text-white font-bold shrink-0 shadow-[0_0_12px_#E10600]">4</span>
+<span class="text-crimson-glow font-bold">Safety Guard: Overheating detected (N=4 ≥ 2 reviews)</span>
+</li>
+</ol>
+</div>
+</aside>
+</div>
+</main>
+<!-- Interactive JavaScript for Live Review Inspection Switcher & Motion -->
+<script>
+    const reviewData = {
+      '15': {
+        title: 'Review #15 • Verified Buyer',
+        rating: '★☆☆☆☆',
+        starsNum: '(1/5)',
+        date: '18-Sep-16',
+        votes: '24 of 27 users',
+        text: 'I bought this phone during the festive sale. The display and general responsiveness is decent for basic calling and whatsapp, but <mark class="bg-crimson/40 text-white px-2 py-0.5 rounded border border-crimson/70 font-medium shadow-[0_0_18px_rgba(225,6,0,0.65)]">the phone is overheating after 10 mins of use</mark> and charging creates excessive warmth on the rear panel. Very concerned regarding battery degradation over long term. Would advise caution.',
+        aspect: '"thermal / battery"',
+        sentiment: '"Negative"',
+        risk: '0.89 (High Risk Alert)',
+        isRisk: true
+      },
+      '2': {
+        title: 'Review #2 • Verified Buyer',
+        rating: '★☆☆☆☆',
+        starsNum: '(1/5)',
+        date: '02-Oct-16',
+        votes: '19 of 21 users',
+        text: 'Heavy battery heating problem. While playing simple asphalt game <mark class="bg-crimson/40 text-white px-2 py-0.5 rounded border border-crimson/70 font-medium shadow-[0_0_18px_rgba(225,6,0,0.65)]">device gets dangerously hot while charging and after 10 mins gaming</mark>. Had to visit Lenovo service center.',
+        aspect: '"thermal / gaming"',
+        sentiment: '"Negative"',
+        risk: '0.94 (Critical Risk)',
+        isRisk: true
+      },
+      '33': {
+        title: 'Review #33 • Certified Reviewer',
+        rating: '★★☆☆☆',
+        starsNum: '(2/5)',
+        date: '14-Aug-16',
+        votes: '8 of 10 users',
+        text: 'Camera is average, sound is decent. But big red flag: <mark class="bg-crimson/40 text-white px-2 py-0.5 rounded border border-crimson/70 font-medium shadow-[0_0_18px_rgba(225,6,0,0.65)]">overheating issues persist during fast charging</mark>. Cannot hold the metal frame comfortably.',
+        aspect: '"charging / temperature"',
+        sentiment: '"Negative"',
+        risk: '0.81 (High Risk)',
+        isRisk: true
+      },
+      '67': {
+        title: 'Review #67 • Verified Customer',
+        rating: '★☆☆☆☆',
+        starsNum: '(1/5)',
+        date: '29-Nov-16',
+        votes: '31 of 34 users',
+        text: 'Extremely poor thermal engineering. After 15 minutes of navigation on GPS, <mark class="bg-crimson/40 text-white px-2 py-0.5 rounded border border-crimson/70 font-medium shadow-[0_0_18px_rgba(225,6,0,0.65)]">phone was burning to the touch and thermal throttled</mark>. Returned device immediately.',
+        aspect: '"thermal / gps"',
+        sentiment: '"Negative"',
+        risk: '0.92 (High Risk)',
+        isRisk: true
+      },
+      '12': {
+        title: 'Review #12 • Verified Buyer',
+        rating: '★★★★★',
+        starsNum: '(5/5)',
+        date: '05-Sep-16',
+        votes: '42 of 45 users',
+        text: 'Value for money handset! <mark class="bg-lime/25 text-white px-2 py-0.5 rounded border border-lime/60 font-medium shadow-[0_0_18px_rgba(191,226,58,0.5)]">Battery life provides dependable day-long endurance under standard productivity usage</mark>. Easily lasts until evening with 30% left over.',
+        aspect: '"battery / longevity"',
+        sentiment: '"Positive"',
+        risk: '0.02 (Safe)',
+        isRisk: false
+      },
+      '4': {
+        title: 'Review #4 • Top 50 Reviewer',
+        rating: '★★★★☆',
+        starsNum: '(4/5)',
+        date: '11-Jul-16',
+        votes: '63 of 68 users',
+        text: 'For the budget segment, Lenovo did a great job. <mark class="bg-lime/25 text-white px-2 py-0.5 rounded border border-lime/60 font-medium shadow-[0_0_18px_rgba(191,226,58,0.5)]">Daylight camera performance produces crisp detail and natural saturation</mark>. In dim ambient light it struggles, but outdoors it is spectacular.',
+        aspect: '"camera / daylight"',
+        sentiment: '"Positive"',
+        risk: '0.04 (Safe)',
+        isRisk: false
+      },
+      '34': {
+        title: 'Review #34 • Power User',
+        rating: '★★★★★',
+        starsNum: '(5/5)',
+        date: '22-Aug-16',
+        votes: '18 of 19 users',
+        text: 'Great battery backup! <mark class="bg-lime/25 text-white px-2 py-0.5 rounded border border-lime/60 font-medium shadow-[0_0_18px_rgba(191,226,58,0.5)]">Easily lasts 15 hours screen-on time for videos and web work</mark>. Extremely pleased with performance.',
+        aspect: '"battery / endurance"',
+        sentiment: '"Positive"',
+        risk: '0.03 (Safe)',
+        isRisk: false
+      },
+      '19': {
+        title: 'Review #19 • Verified Buyer',
+        rating: '★★★★☆',
+        starsNum: '(4/5)',
+        date: '03-Oct-16',
+        votes: '14 of 15 users',
+        text: 'Day shots are breathtaking for this price category. Sharp edges, rich colors. Struggles in dimly lit rooms, but overall remarkable value.',
+        aspect: '"camera / clarity"',
+        sentiment: '"Positive"',
+        risk: '0.05 (Safe)',
+        isRisk: false
+      },
+      '23': {
+        title: 'Review #23 • Verified Customer',
+        rating: '★★★★★',
+        starsNum: '(5/5)',
+        date: '19-Aug-16',
+        votes: '27 of 28 users',
+        text: 'Chassis feel is sturdy yet surprisingly light. Dropped it twice without any marks. Dolby speaker clarity is crisp and punchy.',
+        aspect: '"build / audio"',
+        sentiment: '"Positive"',
+        risk: '0.01 (Safe)',
+        isRisk: false
+      },
+      '56': {
+        title: 'Review #56 • Tech Enthusiast',
+        rating: '★★★★☆',
+        starsNum: '(4/5)',
+        date: '12-Sep-16',
+        votes: '9 of 11 users',
+        text: 'Polycarbonate matte back has great grip and does not attract smudges. Sound output from dual speakers is among the best in budget segment.',
+        aspect: '"design / speakers"',
+        sentiment: '"Positive"',
+        risk: '0.02 (Safe)',
+        isRisk: false
+      },
+      '7': {
+        title: 'Review #7 • Verified Buyer',
+        rating: '★★★☆☆',
+        starsNum: '(3/5)',
+        date: '28-Aug-16',
+        votes: '15 of 18 users',
+        text: 'Decent daily driver, but heats up when charging while playing games, leading to visible stutter and frame drops.',
+        aspect: '"thermal / multitasking"',
+        sentiment: '"Neutral"',
+        risk: '0.42 (Moderate)',
+        isRisk: false
+      },
+      '3': {
+        title: 'Review #3 • Verified Buyer',
+        rating: '★★★★☆',
+        starsNum: '(4/5)',
+        date: '17-Jul-16',
+        votes: '21 of 22 users',
+        text: 'Photos taken in daylight or well-lit rooms show punchy colors and fast shutter capture with very little motion blur.',
+        aspect: '"camera / daylight"',
+        sentiment: '"Positive"',
+        risk: '0.04 (Safe)',
+        isRisk: false
+      },
+      '18': {
+        title: 'Review #18 • Photography Hobbyist',
+        rating: '★★★★☆',
+        starsNum: '(4/5)',
+        date: '09-Aug-16',
+        votes: '33 of 36 users',
+        text: 'Very satisfied with camera shutter speeds and natural color rendering during sunny outdoor sessions.',
+        aspect: '"camera / daylight"',
+        sentiment: '"Positive"',
+        risk: '0.02 (Safe)',
+        isRisk: false
+      },
+      '9': {
+        title: 'Review #9 • Verified Customer',
+        rating: '★★☆☆☆',
+        starsNum: '(2/5)',
+        date: '21-Sep-16',
+        votes: '12 of 14 users',
+        text: 'Indoor night shots look muddy with intense digital noise; post-processing softens details significantly.',
+        aspect: '"camera / low-light"',
+        sentiment: '"Negative"',
+        risk: '0.12 (Safe)',
+        isRisk: false
+      },
+      '44': {
+        title: 'Review #44 • Verified Buyer',
+        rating: '★★☆☆☆',
+        starsNum: '(2/5)',
+        date: '04-Oct-16',
+        votes: '16 of 18 users',
+        text: 'Low light shots have way too much grain and color noise. Flash washes out skin tones. Night photography is not usable.',
+        aspect: '"camera / low-light"',
+        sentiment: '"Negative"',
+        risk: '0.14 (Safe)',
+        isRisk: false
+      }
+    };
+
+    function selectReview(id) {
+      const data = reviewData[id];
+      if (!data) return;
+
+      document.getElementById('reviewTitle').innerText = data.title;
+      document.getElementById('starRating').innerHTML = `${data.rating} <span class="ml-1 text-xs text-peach/60 font-mono">${data.starsNum}</span>`;
+      document.getElementById('reviewDate').innerText = data.date;
+      document.getElementById('reviewVotes').innerText = data.votes;
+      document.getElementById('reviewBodyText').innerHTML = data.text;
+      document.getElementById('tupleAspect').innerText = data.aspect;
+      document.getElementById('tupleSentiment').innerText = data.sentiment;
+      document.getElementById('tupleRisk').innerText = data.risk;
+
+      if (data.isRisk) {
+        document.getElementById('tupleRisk').className = 'text-crimson font-bold';
+        document.getElementById('tupleSentiment').className = 'text-crimson font-bold';
+      } else {
+        document.getElementById('tupleRisk').className = 'text-lime font-bold';
+        document.getElementById('tupleSentiment').className = 'text-lime font-bold';
+      }
+
+      // Update active tabs styling
+      document.querySelectorAll('.review-tab').forEach(tab => {
+        tab.className = 'review-tab px-3 py-1 rounded-xl text-xs font-mono glass-pill-surface text-peach/85 hover:text-white transition-all';
+      });
+      const activeBtn = document.getElementById('tab-' + id);
+      if (activeBtn) {
+        if (data.isRisk) {
+          activeBtn.className = 'review-tab active px-3 py-1 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-crimson to-crimson-glow text-white border border-white/40 shadow-[0_0_16px_rgba(225,6,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.6)] transition-all';
+        } else {
+          activeBtn.className = 'review-tab active px-3 py-1 rounded-xl text-xs font-mono font-bold frosted-lime-button transition-all';
+        }
+      }
+
+      // Smooth scroll & momentary card flash highlight
+      const inspector = document.getElementById('audit');
+      if (inspector) {
+        inspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      const targetCard = document.getElementById('bodyCard');
+      if (targetCard) {
+        targetCard.classList.remove('evidence-flash');
+        void targetCard.offsetWidth; // trigger reflow
+        targetCard.classList.add('evidence-flash');
+      }
+    }
+
+    // CTA Button Click Feedback
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+      const btn = this;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span><span>Synthesizing ChromaDB...</span>`;
+      setTimeout(() => {
+        btn.innerHTML = `<span class="material-symbols-outlined text-base font-bold">auto_awesome</span><span>Analyze Reviews</span>`;
+      }, 700);
+    });
+
+    // Trigger polarization bar width expansion smoothly on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const posBar = document.getElementById('positivePolarizationBar');
+      const negBar = document.getElementById('negativePolarizationBar');
+      const divider = document.getElementById('polarizationDivider');
+      if (posBar && negBar) {
+        posBar.style.width = '0%';
+        negBar.style.width = '0%';
+        if (divider) divider.style.opacity = '0';
+        setTimeout(() => {
+          posBar.style.width = '53.3%';
+          negBar.style.width = '46.7%';
+          if (divider) {
+            divider.style.left = '53.3%';
+            divider.style.opacity = '1';
+          }
+        }, 150);
+      }
+    });
+  </script>
+</body></html>

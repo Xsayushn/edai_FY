@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all project code and datasets
 COPY . .
 
+# Ensure vector index is warmed up for sub-millisecond retrieval on boot
+RUN python -c "from ingest import is_already_ingested; exit(0 if is_already_ingested('MACBOOK_AIR_M2') else 1)" || python train_and_index_all.py
+
 # Default port for Railway / Render
 ENV PORT=8501
 EXPOSE 8501

@@ -3,14 +3,15 @@ headless = true
 address = "0.0.0.0"
 enableCORS = false
 enableXsrfProtection = false
+fileWatcherType = "none"
 
 [browser]
 gatherUsageStats = false
 
 [theme]
-base = "light"
-primaryColor = "#0f172a"
-backgroundColor = "#f8fafc"
-secondaryBackgroundColor = "#ffffff"
-textColor = "#0f172a"
+base = "dark"
+primaryColor = "#BFE23A"
+backgroundColor = "#0D0F12"
+secondaryBackgroundColor = "#14171D"
+textColor = "#F9EAD7"
 font = "sans serif"

@@ -9,14 +9,14 @@ REM Try conda python first if available
 where py >nul 2>nul
 if %errorlevel% equ 0 (
     echo Launching with Python launcher (py -3.12)...
-    py -3.12 -m streamlit run app.py
+    py -3.12 -m streamlit run app.py --server.fileWatcherType none
     goto end
 )
 
 where python >nul 2>nul
 if %errorlevel% equ 0 (
     echo Launching with python...
-    python -m streamlit run app.py
+    python -m streamlit run app.py --server.fileWatcherType none
     goto end
 )
 

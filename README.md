@@ -246,7 +246,7 @@ project/
 
 ### Step 1 — Navigate to the project folder
 ```bash
-cd c:\sem7\EDI\project
+cd opinionLens-main
 ```
 
 ### Step 2 — Install dependencies
@@ -421,4 +421,48 @@ Or use the Re-ingest button in the sidebar.
 
 ---
 
-*For academic / educational use. Dataset sourced from Mendeley Data.*
+## 15. Cloud & Production Deployment Guide
+
+OpinionLens is containerized and production-ready for immediate deployment across all major cloud providers.
+
+### Option A: Railway (1-Click Docker Deployment)
+1. Fork or push this repository to GitHub.
+2. In Railway, click **New Project** → **Deploy from GitHub repo**.
+3. Railway automatically detects `railway.json` and `Dockerfile`.
+4. Under **Variables**, add:
+   ```env
+   GROQ_API_KEY=gsk_...
+   ```
+   *(Optional: If left blank, the app runs in 100% Zero-API Local Mode on CPU)*
+5. Railway assigns a public URL (`https://your-app.up.railway.app`) with HTTPS and automated healthchecks.
+
+### Option B: Render (Automated Blueprint via `render.yaml`)
+1. Create a **New Blueprint Instance** on [render.com](https://render.com).
+2. Connect your repository — Render automatically detects [`render.yaml`](file:///e:/project/opinionLens-main/render.yaml).
+3. The build command will install CPU-optimized PyTorch, dependencies, and pre-index all 18 ChromaDB collections during the build step.
+4. Render boots Streamlit bound to dynamic `$PORT`.
+
+### Option C: Standalone Docker (Local / Self-Hosted VPS / AWS ECS)
+Build and run the lightweight CPU image:
+```bash
+# Build container image
+docker build -t opinionlens:latest .
+
+# Run container mapping port 8501
+docker run -p 8501:8501 -e GROQ_API_KEY="your_api_key_here" opinionlens:latest
+```
+Access the dashboard at `http://localhost:8501`.
+
+### Option D: Streamlit Community Cloud (Zero-Cost Hosting)
+1. Push code to GitHub.
+2. Sign in to [share.streamlit.io](https://share.streamlit.io) and select your repo.
+3. Set **Main file path** to `app.py`.
+4. In **App settings** → **Secrets**, add:
+   ```toml
+   GROQ_API_KEY = "gsk_..."
+   ```
+5. Click **Deploy** — the app automatically launches with live updates.
+
+---
+
+*For academic / educational use. Sourced from Mendeley Data, SemEval-2016 ABSA, and Open Tech Review Corpora.*

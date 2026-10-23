@@ -25,8 +25,24 @@ def run_tests():
     print(f"    Amazon dataset: {len(df_a)} reviews loaded successfully.")
 
     df_l = load_universal_dataset("dataset/laptops.csv")
-    assert len(df_l) > 0, "Laptops dataset empty!"
-    print(f"    Laptops dataset: {len(df_l)} reviews loaded successfully.")
+    assert len(df_l) >= 350, f"Laptops dataset should have >=350 reviews, found {len(df_l)}"
+    print(f"    Laptops dataset: {len(df_l)} reviews loaded successfully (MacBook, Dell XPS, ThinkPad).")
+
+    df_audio = load_universal_dataset("dataset/audio_headphones.csv")
+    assert len(df_audio) >= 250, f"Audio dataset should have >=250 reviews, found {len(df_audio)}"
+    print(f"    Audio & Headphones: {len(df_audio)} reviews loaded successfully (Sony WH-1000XM4, AirPods Pro 2).")
+
+    df_watches = load_universal_dataset("dataset/smartwatches.csv")
+    assert len(df_watches) >= 250, f"Smartwatches dataset should have >=250 reviews, found {len(df_watches)}"
+    print(f"    Smartwatches & Wearables: {len(df_watches)} reviews loaded successfully (Apple Watch S8, Galaxy Watch 5).")
+
+    df_gaming = load_universal_dataset("dataset/gaming_consoles.csv")
+    assert len(df_gaming) >= 250, f"Gaming Consoles dataset should have >=250 reviews, found {len(df_gaming)}"
+    print(f"    Gaming Consoles: {len(df_gaming)} reviews loaded successfully (PS5, Steam Deck OLED).")
+
+    df_home = load_universal_dataset("dataset/smart_home.csv")
+    assert len(df_home) >= 240, f"Smart Home dataset should have >=240 reviews, found {len(df_home)}"
+    print(f"    Smart Home IoT: {len(df_home)} reviews loaded successfully (Echo Dot Gen 5, Nest Cam).")
 
     print("\n>>> 2. Testing Offline Aspect-Sentiment Extraction...")
     # Convert first 20 reviews to list of dicts

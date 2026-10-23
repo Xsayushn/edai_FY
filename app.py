@@ -62,7 +62,7 @@ def _init_state():
         "selected_review_ids": [],
         "selected_quote": "",
         "selected_aspect": None,
-        "theme_mode": "✦ Editorial Studio Light",
+        "theme_mode": "✦ Luminous Mocha Glass (Stitch Design)",
         "font_large": False,
         "view_layout": "Split View (Side-by-Side)",
         "user_groq_key": "",
@@ -89,7 +89,7 @@ _init_state()
 # Design System & Theme Token Engine
 # ---------------------------------------------------------------------------
 
-theme_mode = st.session_state.get("theme_mode", "✦ Editorial Studio Light")
+theme_mode = st.session_state.get("theme_mode", "✦ Luminous Mocha Glass (Stitch Design)")
 font_large = st.session_state.get("font_large", False)
 
 base_font_size = "16.5px" if font_large else "14.5px"
@@ -143,8 +143,11 @@ if theme_mode == "✦ High-Contrast (WCAG AAA)":
         "input_border": "#ffffff",
         "chart_font": "#ffffff",
         "chart_zero": "#ffffff",
+        "chart_pos": "#4ade80",
+        "chart_neg": "#ff4d4d",
         "tag_bg": "#111111",
         "tag_text": "#ffffff",
+        "is_glass": False,
     }
 elif theme_mode == "✦ Obsidian Matte Dark":
     tokens = {
@@ -193,11 +196,13 @@ elif theme_mode == "✦ Obsidian Matte Dark":
         "input_border": "#334155",
         "chart_font": "#94a3b8",
         "chart_zero": "rgba(255, 255, 255, 0.15)",
+        "chart_pos": "#10b981",
+        "chart_neg": "#f43f5e",
         "tag_bg": "#1e293b",
         "tag_text": "#cbd5e1",
+        "is_glass": False,
     }
-else:
-    # ✦ Editorial Studio Light (Default clean human aesthetic)
+elif theme_mode == "✦ Editorial Studio Light":
     tokens = {
         "bg_color": "#f8fafc",
         "card_bg": "#ffffff",
@@ -244,29 +249,103 @@ else:
         "input_border": "#cbd5e1",
         "chart_font": "#475569",
         "chart_zero": "#cbd5e1",
+        "chart_pos": "#10b981",
+        "chart_neg": "#f43f5e",
         "tag_bg": "#f1f5f9",
         "tag_text": "#475569",
+        "is_glass": False,
+    }
+else:
+    # ✦ Luminous Mocha Glass (Stitch Design) — Rich Frosted Glassmorphism
+    tokens = {
+        "bg_color": "#0D0F12",
+        "card_bg": "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(14, 18, 25, 0.72) 100%)",
+        "sidebar_bg": "linear-gradient(180deg, rgba(13, 15, 18, 0.94) 0%, rgba(9, 11, 14, 0.98) 100%)",
+        "text_primary": "#F9EAD7",
+        "text_secondary": "#CEC5BB",
+        "text_muted": "#9E9485",
+        "border_color": "rgba(255, 255, 255, 0.16)",
+        "border_subtle": "rgba(255, 255, 255, 0.08)",
+        "header_bg": "linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(20, 23, 29, 0.75) 100%)",
+        "header_border": "rgba(255, 255, 255, 0.22)",
+        "header_text": "#F9EAD7",
+        "safety_bg": "linear-gradient(135deg, rgba(225, 6, 0, 0.22) 0%, rgba(70, 4, 3, 0.5) 45%, rgba(16, 4, 6, 0.82) 100%)",
+        "safety_border": "rgba(225, 6, 0, 0.5)",
+        "safety_title": "#FFA19E",
+        "safety_text": "#FFDAD6",
+        "consensus_bg": "linear-gradient(135deg, rgba(191, 226, 58, 0.2) 0%, rgba(32, 42, 2, 0.55) 45%, rgba(13, 15, 18, 0.82) 100%)",
+        "consensus_border": "rgba(191, 226, 58, 0.45)",
+        "consensus_title": "#DCFF4E",
+        "consensus_text": "#F9EAD7",
+        "contested_bg": "linear-gradient(135deg, rgba(249, 234, 215, 0.1) 0%, rgba(20, 23, 29, 0.75) 100%)",
+        "contested_border": "rgba(249, 234, 215, 0.3)",
+        "contested_title": "#F9EAD7",
+        "contested_text": "#CEC5BB",
+        "evidence_bg": "linear-gradient(145deg, rgba(255, 255, 255, 0.06) 0%, rgba(8, 11, 16, 0.65) 100%)",
+        "evidence_border": "rgba(255, 255, 255, 0.16)",
+        "evidence_title": "#BFE23A",
+        "chip_bg": "linear-gradient(135deg, rgba(191, 226, 58, 0.25) 0%, rgba(191, 226, 58, 0.08) 100%)",
+        "chip_border": "rgba(191, 226, 58, 0.45)",
+        "chip_text": "#DCFF4E",
+        "quote_bg": "rgba(191, 226, 58, 0.15)",
+        "quote_text": "#DCFF4E",
+        "quote_border": "#BFE23A",
+        "btn_primary_bg": "linear-gradient(135deg, #d4fa48 0%, #BFE23A 40%, #9cb81c 100%)",
+        "btn_primary_text": "#121901",
+        "btn_primary_hover": "linear-gradient(135deg, #e3ff68 0%, #cdf23f 40%, #add020 100%)",
+        "btn_primary_border": "rgba(255, 255, 255, 0.6)",
+        "btn_secondary_bg": "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)",
+        "btn_secondary_text": "#F9EAD7",
+        "btn_secondary_hover": "linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%)",
+        "btn_secondary_border": "rgba(255, 255, 255, 0.22)",
+        "input_bg": "linear-gradient(145deg, rgba(18, 22, 30, 0.75) 0%, rgba(9, 12, 17, 0.88) 100%)",
+        "input_text": "#F9EAD7",
+        "input_border": "rgba(255, 255, 255, 0.16)",
+        "chart_font": "#CEC5BB",
+        "chart_zero": "rgba(255, 255, 255, 0.2)",
+        "chart_pos": "#BFE23A",
+        "chart_neg": "#E10600",
+        "tag_bg": "rgba(255, 255, 255, 0.08)",
+        "tag_text": "#F9EAD7",
+        "is_glass": True,
     }
 
+# Google Fonts & Glassmorphism Design System
 st.markdown(
     f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 html, body, [class*="css"] {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: {base_font_size};
     letter-spacing: -0.01em;
 }}
 
-.stApp {{
-    background-color: {tokens["bg_color"]};
-    color: {tokens["text_primary"]};
+h1, h2, h3, .brand-name, .section-headline, .verdict-badge {{
+    font-family: 'Space Grotesk', sans-serif !important;
 }}
 
-/* Sidebar Contrast Guarantee */
+.citation-chip, .meta-pill, .review-id-tag, [data-testid="stMetricLabel"] {{
+    font-family: 'JetBrains Mono', monospace !important;
+}}
+
+.stApp, [data-testid="stAppViewContainer"] {{
+    background-color: #0D0F12 !important;
+    background-image: 
+        radial-gradient(circle at 12% 18%, rgba(225, 6, 0, 0.28) 0%, transparent 42%),
+        radial-gradient(circle at 88% 82%, rgba(191, 226, 58, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 50% 45%, rgba(249, 234, 215, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 82% 15%, rgba(38, 208, 235, 0.18) 0%, transparent 35%) !important;
+    background-attachment: fixed !important;
+    color: {tokens["text_primary"]} !important;
+}}
+
+/* ── Sidebar Contrast & Frosted Elevation ── */
 [data-testid="stSidebar"] {{
-    background-color: {tokens["sidebar_bg"]} !important;
+    background: {tokens["sidebar_bg"]} !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
     border-right: 1px solid {tokens["border_color"]} !important;
 }}
 
@@ -311,10 +390,13 @@ label[data-testid="stWidgetLabel"] {{
 
 /* Inputs & Dropdown Selects */
 div[data-baseweb="select"] > div {{
-    background-color: {tokens["input_bg"]} !important;
+    background: {tokens["input_bg"]} !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
     color: {tokens["input_text"]} !important;
     border: 1px solid {tokens["input_border"]} !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
 }}
 
 div[data-baseweb="select"] *,
@@ -329,16 +411,19 @@ div[data-baseweb="select"] svg {{
 }}
 
 div[data-baseweb="input"] {{
-    background-color: {tokens["input_bg"]} !important;
+    background: {tokens["input_bg"]} !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
     border: 1px solid {tokens["input_border"]} !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
 }}
 
 div[data-baseweb="input"] input {{
-    background-color: {tokens["input_bg"]} !important;
+    background: transparent !important;
     color: {tokens["input_text"]} !important;
     border: none !important;
-    padding: 0.45rem 0.75rem !important;
+    padding: 0.5rem 0.85rem !important;
 }}
 
 div[data-baseweb="input"] input::placeholder {{
@@ -348,30 +433,36 @@ div[data-baseweb="input"] input::placeholder {{
 /* Dropdown popover list items */
 div[data-baseweb="popover"],
 ul[role="listbox"] {{
-    background-color: {tokens["card_bg"]} !important;
+    background: #14171d !important;
+    backdrop-filter: blur(24px) !important;
     border: 1px solid {tokens["border_color"]} !important;
+    border-radius: 8px !important;
 }}
 
 ul[role="listbox"] li {{
-    background-color: {tokens["card_bg"]} !important;
+    background: transparent !important;
     color: {tokens["text_primary"]} !important;
 }}
 
 ul[role="listbox"] li:hover {{
-    background-color: {tokens["border_subtle"]} !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
 }}
 
 /* ── Top Editorial Brand Bar ── */
 .brand-header {{
-    background-color: {tokens["header_bg"]};
+    background: {tokens["header_bg"]};
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid {tokens["header_border"]};
-    border-radius: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.42);
+    border-left: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 14px;
     padding: 1.1rem 1.6rem;
     margin-bottom: 0.8rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
 }}
 
 .brand-left {{
@@ -381,16 +472,17 @@ ul[role="listbox"] li:hover {{
 }}
 
 .brand-icon-box {{
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    background-color: {tokens["btn_primary_bg"]};
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: {tokens["btn_primary_bg"]};
     color: {tokens["btn_primary_text"]};
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    box-shadow: 0 4px 16px rgba(191, 226, 58, 0.45);
 }}
 
 .brand-name {{
@@ -418,24 +510,29 @@ ul[role="listbox"] li:hover {{
     font-size: 0.72rem;
     font-weight: 600;
     padding: 4px 10px;
-    border-radius: 6px;
-    background-color: {tokens["tag_bg"]};
+    border-radius: 9999px;
+    background: {tokens["tag_bg"]};
     color: {tokens["tag_text"]};
     border: 1px solid {tokens["border_color"]};
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    backdrop-filter: blur(12px);
 }}
 
 /* ── Interactive Presets & Chip Containers ── */
 .preset-bar {{
-    background-color: {tokens["card_bg"]};
+    background: {tokens["card_bg"]};
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
     border: 1px solid {tokens["border_color"]};
-    border-radius: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
     padding: 8px 14px;
     margin-bottom: 1.1rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
 }}
 
 .preset-label {{
@@ -447,39 +544,74 @@ ul[role="listbox"] li:hover {{
     white-space: nowrap;
 }}
 
-/* ── Cards ── */
+/* ── Cards & Frosted Elevation ── */
 .editorial-card {{
-    background-color: {tokens["card_bg"]};
+    background: {tokens["card_bg"]};
+    backdrop-filter: blur(28px) saturate(210%);
+    -webkit-backdrop-filter: blur(28px) saturate(210%);
     border: 1px solid {tokens["border_color"]};
-    border-radius: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.42);
+    border-left: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 14px;
     padding: 1.3rem 1.5rem;
     margin-bottom: 1.1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}}
+
+div[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: {tokens["card_bg"]} !important;
+    backdrop-filter: blur(28px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
+    border: 1px solid {tokens["border_color"]} !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.42) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45) !important;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}}
+
+.editorial-card:hover,
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    border-top-color: rgba(255, 255, 255, 0.55) !important;
+    box-shadow: 0 28px 56px -12px rgba(0, 0, 0, 0.85), 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.6) !important;
 }}
 
 .card-safety {{
-    background-color: {tokens["safety_bg"]};
-    border: 1px solid {tokens["safety_border"]};
+    background: {tokens["safety_bg"]} !important;
+    backdrop-filter: blur(30px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(220%) !important;
+    border: 1px solid {tokens["safety_border"]} !important;
+    border-top: 1px solid rgba(255, 140, 135, 0.75) !important;
+    border-left: 1px solid rgba(255, 100, 95, 0.50) !important;
+    box-shadow: 0 24px 50px -10px rgba(225, 6, 0, 0.40), 0 0 35px rgba(225, 6, 0, 0.22), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6) !important;
 }}
 
 .card-consensus {{
-    background-color: {tokens["consensus_bg"]};
-    border: 1px solid {tokens["consensus_border"]};
+    background: {tokens["consensus_bg"]} !important;
+    backdrop-filter: blur(30px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(210%) !important;
+    border: 1px solid {tokens["consensus_border"]} !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 20px 45px -10px rgba(191, 226, 58, 0.25), 0 0 30px rgba(191, 226, 58, 0.15), inset 0 1px 2px 0 rgba(255, 255, 255, 0.5) !important;
 }}
 
 .card-contested {{
-    background-color: {tokens["contested_bg"]};
-    border: 1px solid {tokens["contested_border"]};
+    background: {tokens["contested_bg"]} !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid {tokens["contested_border"]} !important;
 }}
 
 .card-evidence {{
-    background-color: {tokens["evidence_bg"]};
-    border: 1px solid {tokens["evidence_border"]};
+    background: {tokens["evidence_bg"]} !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid {tokens["evidence_border"]} !important;
 }}
 
 /* ── Section Titles ── */
 .section-headline {{
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -503,12 +635,16 @@ ul[role="listbox"] li:hover {{
 
 /* ── Executive Verdict Banner ── */
 .verdict-banner {{
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 1.2rem 1.5rem;
     margin-bottom: 1.2rem;
     border: 1px solid {tokens["border_color"]};
-    background-color: {tokens["card_bg"]};
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.42);
+    border-left: 1px solid rgba(255, 255, 255, 0.28);
+    background: {tokens["card_bg"]};
+    backdrop-filter: blur(28px) saturate(210%);
+    -webkit-backdrop-filter: blur(28px) saturate(210%);
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
 }}
 
 .verdict-header {{
@@ -528,30 +664,32 @@ ul[role="listbox"] li:hover {{
     padding: 4px 12px;
     border-radius: 999px;
     display: inline-block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }}
 
 /* ── Editorial Footnote Citation Chips [#14] ── */
 .citation-chip {{
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background-color: {tokens["chip_bg"]};
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: {tokens["chip_bg"]};
     border: 1px solid {tokens["chip_border"]};
     color: {tokens["chip_text"]};
     margin: 0 2px;
     display: inline-block;
     vertical-align: middle;
+    box-shadow: 0 2px 8px rgba(191, 226, 58, 0.22);
 }}
 
 /* ── Natural Text Highlight Marker ── */
 .quote-marker {{
-    background-color: {tokens["quote_bg"]};
+    background: {tokens["quote_bg"]};
     color: {tokens["quote_text"]};
     border-left: 3px solid {tokens["quote_border"]};
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
     font-style: normal;
     font-weight: 500;
     line-height: 1.5;
@@ -561,11 +699,22 @@ ul[role="listbox"] li:hover {{
 
 /* ── Individual Review Card in Inspector ── */
 .review-entry {{
-    background-color: {tokens["card_bg"]};
+    background: {tokens["card_bg"]};
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
     border: 1px solid {tokens["border_color"]};
-    border-radius: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
     padding: 1.1rem;
     margin-bottom: 0.9rem;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.45), 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+    transition: all 0.25s ease;
+}}
+
+.review-entry:hover {{
+    border-color: rgba(255, 255, 255, 0.28);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -4px rgba(0, 0, 0, 0.6);
 }}
 
 .review-meta-bar {{
@@ -592,7 +741,7 @@ ul[role="listbox"] li:hover {{
 }}
 
 .star-empty {{
-    color: #cbd5e1;
+    color: rgba(255, 255, 255, 0.25);
     font-size: 0.95rem;
     letter-spacing: 1px;
 }}
@@ -601,23 +750,26 @@ ul[role="listbox"] li:hover {{
 /* Secondary Buttons (Presets, Topic Chips, Action Toggles) */
 .stButton > button,
 button[kind="secondary"] {{
-    background-color: {tokens["btn_secondary_bg"]} !important;
+    background: {tokens["btn_secondary_bg"]} !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
     color: {tokens["btn_secondary_text"]} !important;
     border: 1px solid {tokens["btn_secondary_border"]} !important;
-    border-radius: 6px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.38) !important;
+    border-radius: 9999px !important;
     font-weight: 600 !important;
     font-size: 0.83rem !important;
-    padding: 0.4rem 0.85rem !important;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.15s ease-in-out !important;
+    padding: 0.45rem 1rem !important;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }}
 
 .stButton > button:hover,
 button[kind="secondary"]:hover {{
-    background-color: {tokens["btn_secondary_hover"]} !important;
-    border-color: {tokens["border_color"]} !important;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.08) !important;
+    background: {tokens["btn_secondary_hover"]} !important;
+    border-color: rgba(255, 255, 255, 0.38) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 6px 18px rgba(0, 0, 0, 0.4) !important;
 }}
 
 /* Force ALL inner text nodes of secondary buttons to match */
@@ -636,18 +788,23 @@ button[kind="secondary"] div {{
 /* Primary Action Button (Run Audit) */
 button[kind="primary"],
 .stButton > button[kind="primary"] {{
-    background-color: {tokens["btn_primary_bg"]} !important;
+    background: {tokens["btn_primary_bg"]} !important;
     color: {tokens["btn_primary_text"]} !important;
     border: 1px solid {tokens["btn_primary_border"]} !important;
+    border-top: 1px solid #ffffff !important;
+    border-radius: 9999px !important;
+    font-family: 'Space Grotesk', sans-serif !important;
     font-weight: 700 !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12) !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: 0 6px 24px rgba(191, 226, 58, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }}
 
 button[kind="primary"]:hover,
 .stButton > button[kind="primary"]:hover {{
-    background-color: {tokens["btn_primary_hover"]} !important;
-    border-color: {tokens["btn_primary_border"]} !important;
-    transform: translateY(-1px);
+    background: {tokens["btn_primary_hover"]} !important;
+    box-shadow: 0 8px 32px rgba(191, 226, 58, 0.75), 0 0 24px rgba(191, 226, 58, 0.4), inset 0 1px 2px 0 #ffffff !important;
+    transform: translateY(-1.5px) !important;
 }}
 
 button[kind="primary"] *,
@@ -664,11 +821,14 @@ button[kind="primary"] div,
 
 /* ── Metrics Strip ── */
 div[data-testid="stMetric"] {{
-    background-color: {tokens["card_bg"]};
+    background: {tokens["card_bg"]};
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
     border: 1px solid {tokens["border_color"]};
-    border-radius: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
     padding: 10px 14px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
 }}
 
 div[data-testid="stMetricLabel"] {{
@@ -1147,7 +1307,7 @@ def render_contested_section(contested, stats):
                 y=aspects,
                 x=pos_vals,
                 orientation="h",
-                marker_color="#10b981",
+                marker_color=tokens.get("chart_pos", "#BFE23A"),
                 opacity=0.9,
             ))
             fig.add_trace(go.Bar(
@@ -1155,26 +1315,26 @@ def render_contested_section(contested, stats):
                 y=aspects,
                 x=[-v for v in neg_vals],
                 orientation="h",
-                marker_color="#f43f5e",
+                marker_color=tokens.get("chart_neg", "#E10600"),
                 opacity=0.9,
             ))
             fig.update_layout(
                 barmode="overlay",
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(color=tokens["chart_font"], size=11, family="Inter"),
+                font=dict(color=tokens["chart_font"], size=11, family="Plus Jakarta Sans"),
                 xaxis=dict(
                     showgrid=False,
                     zeroline=True,
                     zerolinecolor=tokens["chart_zero"],
-                    tickfont=dict(color=tokens["chart_font"]),
+                    tickfont=dict(color=tokens["chart_font"], family="JetBrains Mono"),
                     title="Negative vs. Positive Mentions",
                 ),
-                yaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=False, tickfont=dict(color=tokens["chart_font"], family="Plus Jakarta Sans")),
                 legend=dict(
                     orientation="h",
                     x=0, y=1.12,
-                    font=dict(size=11),
+                    font=dict(size=11, color=tokens["chart_font"], family="Plus Jakarta Sans"),
                 ),
                 margin=dict(l=10, r=10, t=10, b=10),
                 height=max(180, len(aspects) * 28),
@@ -1491,7 +1651,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-demo_cols = st.columns(4)
+demo_cols = st.columns(6)
 
 with demo_cols[0]:
     if st.button("💻 MacBook Air M2\n(Thermals & MagSafe)", use_container_width=True, help="Test fanless thermal throttling and MagSafe charger sparks"):
@@ -1502,26 +1662,42 @@ with demo_cols[0]:
         st.rerun()
 
 with demo_cols[1]:
-    if st.button("🔋 Anker PowerCore\n(Battery Swelling Risk)", use_container_width=True, help="Test lithium battery swelling & smoke hazard detection"):
-        st.session_state["active_brand"] = "Amazon Electronics"
-        st.session_state["active_product_id"] = "B00X5RV14Y"
-        st.session_state["active_query"] = "battery swelling & fast charging"
+    if st.button("🎧 Sony WH-1000XM4\n(ANC & Ear Cup Heat)", use_container_width=True, help="Test Active Noise Cancellation, mic quality, and ear cup thermal alerts"):
+        st.session_state["active_brand"] = "Audio Headphones"
+        st.session_state["active_product_id"] = "SONY_WH1000XM4"
+        st.session_state["active_query"] = "noise cancelling & microphone call quality"
         st.session_state["trigger_run"] = True
         st.rerun()
 
 with demo_cols[2]:
-    if st.button("📱 Lenovo A6000\n(Camera vs Heat Polarity)", use_container_width=True, help="Test conflicting pro/con sentiment on budget smartphone"):
-        st.session_state["active_brand"] = "Lenova"
-        st.session_state["active_product_id"] = "MOBE7JXXKS6PWW2C"
-        st.session_state["active_query"] = "camera vs heating issues"
+    if st.button("🎮 PlayStation 5\n(Stick Drift & Whine)", use_container_width=True, help="Test 4K SSD speed, DualSense stick drift, and power supply coil whine"):
+        st.session_state["active_brand"] = "Gaming Consoles"
+        st.session_state["active_product_id"] = "PS5_CONSOLE"
+        st.session_state["active_query"] = "stick drift & coil whine overheating"
         st.session_state["trigger_run"] = True
         st.rerun()
 
 with demo_cols[3]:
-    if st.button("🔍 Full Balanced Audit\n(Overall Synthesis)", use_container_width=True, help="Generate a balanced executive summary across all aspects"):
-        st.session_state["active_brand"] = "Laptops"
-        st.session_state["active_product_id"] = "MACBOOK_AIR_M2"
-        st.session_state["active_query"] = ""
+    if st.button("⌚ Apple Watch S8\n(Sensor Burn & Screen)", use_container_width=True, help="Test Always-On Retina display, optical sensor burns, and battery swelling"):
+        st.session_state["active_brand"] = "Smartwatches"
+        st.session_state["active_product_id"] = "APPLE_WATCH_S8"
+        st.session_state["active_query"] = "skin burn rash & battery swelling"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+
+with demo_cols[4]:
+    if st.button("🏠 Echo Dot Gen 5\n(Voice & Adapter Melt)", use_container_width=True, help="Test Alexa voice recognition, sponsored suggestions, and adapter overheating"):
+        st.session_state["active_brand"] = "Smart Home"
+        st.session_state["active_product_id"] = "ECHO_DOT_GEN5"
+        st.session_state["active_query"] = "voice pickup & adapter overheating"
+        st.session_state["trigger_run"] = True
+        st.rerun()
+
+with demo_cols[5]:
+    if st.button("🔋 Anker PowerCore\n(Battery Swelling Risk)", use_container_width=True, help="Test lithium battery swelling & smoke hazard detection"):
+        st.session_state["active_brand"] = "Amazon Electronics"
+        st.session_state["active_product_id"] = "B00X5RV14Y"
+        st.session_state["active_query"] = "battery swelling & fast charging"
         st.session_state["trigger_run"] = True
         st.rerun()
 
@@ -1654,11 +1830,18 @@ with chip_col6:
 
 with st.sidebar:
     st.markdown("### Display & Styling")
+    theme_options = [
+        "✦ Luminous Mocha Glass (Stitch Design)",
+        "✦ Editorial Studio Light",
+        "✦ Obsidian Matte Dark",
+        "✦ High-Contrast (WCAG AAA)",
+    ]
+    cur_theme = st.session_state.get("theme_mode", theme_options[0])
+    theme_idx = theme_options.index(cur_theme) if cur_theme in theme_options else 0
     selected_theme = st.selectbox(
         "Visual Theme",
-        ["✦ Editorial Studio Light", "✦ Obsidian Matte Dark", "✦ High-Contrast (WCAG AAA)"],
-        index=0 if st.session_state["theme_mode"] == "✦ Editorial Studio Light"
-        else (1 if st.session_state["theme_mode"] == "✦ Obsidian Matte Dark" else 2),
+        theme_options,
+        index=theme_idx,
     )
     if selected_theme != st.session_state["theme_mode"]:
         st.session_state["theme_mode"] = selected_theme

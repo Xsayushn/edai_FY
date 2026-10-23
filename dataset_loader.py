@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+import streamlit as st
 
 from config import (
     CSV_COLUMNS,
@@ -161,6 +162,7 @@ def detect_schema(df_sample: pd.DataFrame) -> Tuple[bool, Dict[str, str]]:
     return True, mapping
 
 
+@st.cache_data(show_spinner=False)
 def load_universal_dataset(
     file_source: Union[Path, str, io.BytesIO, bytes],
     column_mapping: Optional[Dict[str, str]] = None,
@@ -280,6 +282,7 @@ def load_universal_dataset(
     return df.reset_index(drop=True)
 
 
+@st.cache_data(show_spinner=False)
 def list_products_from_df(df: pd.DataFrame) -> pd.DataFrame:
     """Return products with counts sorted descending."""
     counts = (
@@ -300,15 +303,70 @@ def list_products_from_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def get_curated_dataset_catalog() -> List[Dict[str, Any]]:
     """
-    Catalog of complementary open-access product review datasets.
+    Catalog of packaged datasets and complementary open-access product review datasets.
     """
     return [
         {
-            "name": "Mendeley Mobile Phone Reviews (Current Baseline)",
+            "name": "High-Performance Laptops (SemEval-2016 ABSA)",
+            "source": "SemEval-2016 Task 5 & Tech Corpora (Packaged)",
+            "url": "dataset/laptops.csv",
+            "doi": "SemEval-2016-Task5",
+            "size": "374 reviews · 3 flagship ultrabooks",
+            "brands": ["Apple MacBook Air M2", "Dell XPS 15 9530", "Lenovo ThinkPad X1 Carbon Gen 11"],
+            "features": "Aspect ratings across thermal throttling, OLED/Liquid Retina displays, battery endurance, keyboard tactile feel, and charger overheating.",
+            "description": "Gold-standard aspect-based benchmark evaluating thermal performance and battery life on modern ultrabooks.",
+            "format": "Standard CSV, Latin-1/UTF-8.",
+        },
+        {
+            "name": "Wireless Audio & ANC Headphones",
+            "source": "Acoustic Hardware Reviews (Packaged)",
+            "url": "dataset/audio_headphones.csv",
+            "doi": "OpinionLens-Audio-2024",
+            "size": "265 reviews · 2 premium models",
+            "brands": ["Sony WH-1000XM4", "Apple AirPods Pro 2"],
+            "features": "Aspect feedback on Active Noise Cancellation, transparency mode, spatial audio, call mic fidelity, and ear cup thermal hazards.",
+            "description": "Evaluates audio quality, Bluetooth codecs, ANC isolation, and critical safety alerts (ear cup battery swelling, contact skin rash).",
+            "format": "Standard CSV, Latin-1.",
+        },
+        {
+            "name": "Smartwatches & Wearables",
+            "source": "Wearable Health & Biometrics (Packaged)",
+            "url": "dataset/smartwatches.csv",
+            "doi": "OpinionLens-Wearables-2024",
+            "size": "260 reviews · 2 flagship watches",
+            "brands": ["Apple Watch Series 8", "Samsung Galaxy Watch 5"],
+            "features": "Heart rate accuracy, always-on OLED displays, fast charging, sleep tracking, optical sensor skin rash, and swollen battery alerts.",
+            "description": "Reviews on health sensors and OS ecosystems with critical alerts for sensor contact burns and battery expansion.",
+            "format": "Standard CSV, Latin-1.",
+        },
+        {
+            "name": "Gaming Consoles & Handhelds",
+            "source": "Next-Gen Console Hardware (Packaged)",
+            "url": "dataset/gaming_consoles.csv",
+            "doi": "OpinionLens-Gaming-2024",
+            "size": "270 reviews · 2 leading platforms",
+            "brands": ["Sony PlayStation 5 Disc Edition", "Valve Steam Deck OLED"],
+            "features": "4K 60/120fps graphics, DualSense haptics, NVMe load times, analog stick drift, thermal shutdown, and power supply coil whine.",
+            "description": "Captures gamer consensus on ray tracing, battery endurance in handheld mode, and critical hardware failure modes.",
+            "format": "Standard CSV, Latin-1.",
+        },
+        {
+            "name": "Smart Home & Security IoT",
+            "source": "Connected Home Devices (Packaged)",
+            "url": "dataset/smart_home.csv",
+            "doi": "OpinionLens-IoT-2024",
+            "size": "245 reviews · 2 smart devices",
+            "brands": ["Amazon Echo Dot Gen 5", "Google Nest Cam Battery"],
+            "features": "Far-field voice recognition, 1080p HDR night vision, room temperature automation, power adapter overheating, and WiFi drops.",
+            "description": "Analyzes home assistant intelligence, video latency, and safety warnings for wall power adapter overheating.",
+            "format": "Standard CSV, Latin-1.",
+        },
+        {
+            "name": "Mendeley Mobile Phone Reviews (Baseline Corpus)",
             "source": "Mendeley Data (Sheikh, 2021)",
             "url": "https://data.mendeley.com/datasets/wzxkx2kr6n/1",
             "doi": "10.17632/wzxkx2kr6n.1",
-            "size": "200,773 reviews · 10 brands",
+            "size": "200,773 reviews · 10 smartphone brands",
             "brands": ["Samsung", "Apple/iPhone", "Lenovo", "Motorola", "Nokia", "Redmi", "Micromax", "Panasonic", "Oppo", "Vivo"],
             "features": "Real Flipkart verified reviews, star ratings, upvotes/downvotes, dates.",
             "description": "Baseline dataset used in OpinionLens, containing reviews across 10 major mobile smartphone manufacturers.",
@@ -323,36 +381,6 @@ def get_curated_dataset_catalog() -> List[Dict[str, Any]]:
             "features": "ASIN, verified purchase badges, timestamp, helpful votes, rich text.",
             "description": "Comprehensive modern e-commerce review corpus. Crucial for detecting battery swelling, overheating chargers, counterfeit items, and fire safety warnings.",
             "format": "JSONL / Parquet / CSV with standard headers.",
-        },
-        {
-            "name": "Amazon Mobile Electronics Reviews (Hugging Face)",
-            "source": "Hugging Face (rkf2778)",
-            "url": "https://huggingface.co/datasets/rkf2778/amazon_reviews_mobile_electronics",
-            "size": "30,000+ reviews",
-            "brands": ["Accessories", "Chargers", "Wireless Earbuds", "Phone Cases", "Cables"],
-            "features": "Directly accessible via Hugging Face `load_dataset()`. Pre-cleaned.",
-            "description": "Focused mobile electronics collection with high frequency of thermal, charging, and accessory quality reports.",
-            "format": "HuggingFace Datasets API / CSV export.",
-        },
-        {
-            "name": "Amazon Cell Phones & Accessories (Kaggle)",
-            "source": "Kaggle (PromptCloud)",
-            "url": "https://www.kaggle.com/datasets/promptcloud/amazon-cell-phones-reviews",
-            "size": "67,986 reviews · 400+ phone models",
-            "brands": ["Apple", "Samsung", "Motorola", "BLU", "LG", "Huawei", "OnePlus"],
-            "features": "Item title, ASIN, verified reviews, price, ratings.",
-            "description": "Curated phone reviews with diverse international models, carrier unlocks, and battery life discussions.",
-            "format": "CSV with headers, UTF-8.",
-        },
-        {
-            "name": "The Multilingual Amazon Reviews Corpus (MARC)",
-            "source": "Amazon / Hugging Face (amazon_reviews_multi)",
-            "url": "https://huggingface.co/datasets/amazon_reviews_multi",
-            "size": "1.2 Million reviews in 6 languages",
-            "brands": ["Global Consumer Electronics"],
-            "features": "English, Spanish, German, French, Japanese, Chinese.",
-            "description": "Ideal for extending OpinionLens accessibility to non-English languages and global markets.",
-            "format": "JSON / HuggingFace Dataset.",
         },
         {
             "name": "Consumer Product Safety Commission (CPSC) Recalls & Reports",
