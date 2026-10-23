@@ -3,15 +3,21 @@ import Link from "next/link";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { fetchProductAudit } from "../../lib/api";
 
+import DeviceSearchBox from "../../components/DeviceSearchBox";
+
 interface PageProps {
   params: Promise<{
     productId: string;
   }>;
+  searchParams?: Promise<{
+    q?: string;
+  }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { productId } = await params;
-  const audit = await fetchProductAudit(productId);
+  const sp = searchParams ? await searchParams : {};
+  const audit = await fetchProductAudit(productId, sp.q);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://opinionlens.ai";
 
   const title = `Audit: ${audit.product_name || productId} · Safety & Consensus`;
@@ -45,9 +51,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function AuditPage({ params }: PageProps) {
+export default async function AuditPage({ params, searchParams }: PageProps) {
   const { productId } = await params;
-  const audit = await fetchProductAudit(productId);
+  const sp = searchParams ? await searchParams : {};
+  const query = sp.q || "";
+  const audit = await fetchProductAudit(productId, query);
 
   const hasCriticalRisks = audit.alerts && audit.alerts.length > 0;
 
@@ -60,6 +68,41 @@ export default async function AuditPage({ params }: PageProps) {
           { label: `Audit ${productId}` },
         ]}
       />
+
+      {/* Switch Device & Ask Question Bar */}
+      <div style={{ marginTop: "16px", marginBottom: "28px" }}>
+        <DeviceSearchBox
+          currentProductId={productId}
+          placeholder="Switch to another device or ask aspect (e.g. heating, battery, noise)..."
+        />
+      </div>
+
+      {query && (
+        <div
+          style={{
+            padding: "12px 20px",
+            marginBottom: "24px",
+            background: "var(--neon-lime-subtle)",
+            border: "1px solid var(--neon-lime-border)",
+            borderRadius: "var(--radius-sm)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <span style={{ fontSize: "1.1rem" }}>🔍</span>
+          <span style={{ color: "var(--text-peach)", fontSize: "0.92rem" }}>
+            Showing opinion consensus focused on query: <strong>&ldquo;{query}&rdquo;</strong>
+          </span>
+          <Link
+            href={`/audit/${productId}`}
+            className="badge badge-neutral"
+            style={{ marginLeft: "auto", fontSize: "0.75rem" }}
+          >
+            Clear Filter ✕
+          </Link>
+        </div>
+      )}
 
       {/* Audit Header */}
       <div style={{ marginTop: "24px", marginBottom: "36px" }}>

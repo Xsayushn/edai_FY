@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { fetchCatalogProducts } from "./lib/api";
+import DeviceSearchBox from "./components/DeviceSearchBox";
 
 export const metadata: Metadata = {
   title: "OpinionLens · Explainable RAG for Consumer Product Reviews",
@@ -73,13 +74,19 @@ export default async function HomePage() {
           Synthesize thousands of raw hardware reviews into evidence-grounded consensus points, detect contested sentiment polarity, and intercept hidden critical-minority safety hazards.
         </p>
 
+        {/* Interactive Device Search & Aspect Query Bar */}
+        <DeviceSearchBox />
+
         {/* Quick Launch Buttons */}
-        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center", marginBottom: "40px" }}>
-          <Link href="/audit/B000063W3B" className="btn btn-lime" style={{ padding: "14px 28px", fontSize: "1.05rem" }}>
-            Inspect Flagship Toshiba Audit →
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center", marginBottom: "36px" }}>
+          <Link href="/audit/B000063W3B" className="btn btn-lime" style={{ padding: "12px 24px", fontSize: "1rem" }}>
+            Inspect Flagship Toshiba Laptop →
           </Link>
-          <Link href="#catalog" className="btn btn-glass" style={{ padding: "14px 26px" }}>
-            Browse Hardware Catalog
+          <Link href="/audit/SONY_WH1000XM4" className="btn btn-glass" style={{ padding: "12px 22px" }}>
+            Audit Sony WH-1000XM4 Headphones
+          </Link>
+          <Link href="/audit/PS5_CONSOLE" className="btn btn-glass" style={{ padding: "12px 22px" }}>
+            Audit PlayStation 5 Console
           </Link>
         </div>
 
