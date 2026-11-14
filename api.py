@@ -8,21 +8,13 @@ from __future__ import annotations
 
 import logging
 import os
-import re
-from typing import Any, Dict, List, Optional
-from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from config import (
-    DEFAULT_CSV,
-    DEFAULT_PRODUCT_ID,
-    GROQ_MODEL,
-    MIN_REVIEWS_FOR_PRODUCT,
-)
-from dataset_loader import load_universal_dataset, list_products_from_df
+from config import GROQ_MODEL
 from ingest import (
     ingest_product,
     is_already_ingested,
@@ -30,9 +22,9 @@ from ingest import (
     list_products_in_csv,
 )
 from retriever import retrieve_opinions
-from extractor import extract_aspects, generate_summary, AspectTuple
-from guard import detect_critical_risks, CriticalAlert
-from aggregator import build_aspect_clusters, compute_contention, summarize_aspect_stats, ContestedAspect
+from extractor import extract_aspects, generate_summary
+from guard import detect_critical_risks
+from aggregator import build_aspect_clusters, compute_contention, summarize_aspect_stats
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("opinionlens_api")
@@ -47,7 +39,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -119,7 +111,11 @@ def get_products(brand: Optional[str] = Query(None)):
         for b_label, p in brands.items():
             if b_label.lower() == brand.lower():
                 target_path = p
+                brand = b_label
                 break
+
+        if target_path is None:
+            raise HTTPException(status_code=404, detail=f"Brand '{brand}' not found.")
 
     if target_path is None:
         # Default to Laptops or first available
@@ -175,27 +171,32 @@ def run_audit(req: AuditRequest):
     """Execute the full explainable RAG review audit and safety guard pipeline."""
     pid = req.product_id.strip()
     brands = list_all_brands()
-    
-    # Locate dataset path
+
+    # Resolve the product against the catalog before ingesting or querying. An
+    # unknown ID must not fall through to a different CSV or a stale collection.
+    target_brand = None
     active_path = None
-    target_brand = req.brand
-    if target_brand:
-        for b_label, p in brands.items():
-            if b_label.lower() == target_brand.lower():
-                active_path = p
-                break
+    requested_brand = (req.brand or "").strip()
+    matching_brands = [
+        (label, path)
+        for label, path in brands.items()
+        if not requested_brand or label.casefold() == requested_brand.casefold()
+    ]
+
+    if requested_brand and not matching_brands:
+        raise HTTPException(status_code=404, detail=f"Brand '{requested_brand}' not found.")
+
+    for b_label, path in matching_brands:
+        df_prods = list_products_in_csv(path)
+        match = df_prods[df_prods["product_id"].astype(str) == pid]
+        if not match.empty:
+            active_path = path
+            target_brand = b_label
+            product_name = str(match.iloc[0]["product_name"])
+            break
 
     if not active_path:
-        # Search all brands
-        for b_label, p in brands.items():
-            df_prods = list_products_in_csv(p)
-            if pid in df_prods["product_id"].values:
-                active_path = p
-                target_brand = b_label
-                break
-
-    if not active_path:
-        active_path = Path("dataset") / DEFAULT_CSV
+        raise HTTPException(status_code=404, detail=f"Product '{pid}' not found in the catalog.")
 
     # 1. Ingestion check
     if not is_already_ingested(pid):
@@ -204,6 +205,10 @@ def run_audit(req: AuditRequest):
             ingest_product(active_path, pid)
         except Exception as e:
             logger.error(f"Ingest failed for {pid}: {e}")
+            raise HTTPException(
+                status_code=503,
+                detail="Reviews for this product could not be indexed. Please try again later.",
+            ) from e
 
     # 2. Retrieval
     query_str = (req.query or "").strip()
@@ -216,7 +221,11 @@ def run_audit(req: AuditRequest):
     if not reviews:
         return {
             "product_id": pid,
+            "product_name": product_name,
+            "brand": target_brand,
             "reviews": [],
+            "review_count": 0,
+            "rating_avg": 0,
             "alerts": [],
             "contested": [],
             "stats": [],
@@ -314,6 +323,7 @@ def run_audit(req: AuditRequest):
 
     return {
         "product_id": pid,
+        "product_name": product_name,
         "brand": target_brand or "Electronics",
         "review_count": len(reviews),
         "rating_avg": avg_rating,

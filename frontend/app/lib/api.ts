@@ -35,6 +35,8 @@ export interface AuditData {
   product_id: string;
   product_name?: string;
   brand: string;
+  source: "live" | "sample" | "unavailable";
+  error_message?: string;
   review_count: number;
   rating_avg: number;
   summary: {
@@ -54,7 +56,13 @@ export interface ProductCatalogItem {
   brand: string;
 }
 
-// Fallback audit cache for static compilation or when local Python server is launching
+export interface BrandCatalogItem {
+  brand: string;
+  csv_file: string;
+  product_count: number;
+}
+
+// Curated examples keep the UI explorable without a running Python API.
 const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
   B000063W3B: {
     product_id: "B000063W3B",
@@ -104,7 +112,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 5,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Best desktop replacement laptop I have owned. The UXGA screen is brilliant and the Harmon Kardon sound system blows away any other portable computer.",
         helpful_votes: 14,
@@ -112,7 +120,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 2,
         rating: 3,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Great screen, but heavy and runs hot on your lap. Do not expect more than an hour and a half on battery when doing intensive tasks.",
         helpful_votes: 8,
@@ -120,7 +128,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 3,
         rating: 2,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "The machine is fast, but after two months the cooling fan became extremely noisy and the underside gets scarily hot during DVD playback.",
         helpful_votes: 19,
@@ -175,7 +183,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 5,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "The active noise cancellation is pure sorcery. It completely silences airplane engine rumble and noisy open-plan offices.",
         helpful_votes: 62,
@@ -183,7 +191,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 4,
         rating: 2,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Audio playback is fantastic, but the built-in microphones are awful for voice calls. Colleagues complain I sound distant.",
         helpful_votes: 58,
@@ -230,7 +238,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 5,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "The custom Gen4 NVMe SSD completely eliminates loading screens. The DualSense haptic feedback adds visceral immersion.",
         helpful_votes: 88,
@@ -238,7 +246,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 4,
         rating: 2,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Both included DualSense controllers developed severe left stick drift within 5 months of normal play.",
         helpful_votes: 95,
@@ -285,7 +293,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 5,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "The always-on retina display is razor sharp even in blazing sunlight. Heart rate tracking is spot on.",
         helpful_votes: 61,
@@ -293,7 +301,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 4,
         rating: 2,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Battery life is infuriatingly short. If you track an outdoor GPS workout, it barely makes 18 hours.",
         helpful_votes: 72,
@@ -339,7 +347,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 5,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "The metal unibody feels premium in hand, display is crisp and vibrant, and call quality is super clear.",
         helpful_votes: 18,
@@ -347,7 +355,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 6,
         rating: 2,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text:
           "Rear camera struggles terribly in indoor lighting and evening shots. Photos look noisy and soft.",
         helpful_votes: 15,
@@ -383,7 +391,7 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
       {
         review_id: 1,
         rating: 4,
-        date: "Verified Hardware Purchase",
+        date: "Sample review data",
         review_text: "Solid budget laptop for college coursework. Works fine with external peripherals.",
         helpful_votes: 5,
       },
@@ -391,9 +399,24 @@ const FALLBACK_AUDITS: Record<string, Partial<AuditData>> = {
   },
 };
 
-export async function fetchCatalogProducts(): Promise<ProductCatalogItem[]> {
+export async function fetchCatalogBrands(): Promise<BrandCatalogItem[]> {
   try {
-    const res = await fetch(`${FASTAPI_URL}/api/products`, {
+    const res = await fetch(`${FASTAPI_URL}/api/brands`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.brands)) return data.brands;
+    }
+  } catch {
+    // The page remains usable with a product ID if the catalog is offline.
+  }
+  return [];
+}
+
+export async function fetchCatalogProducts(brand?: string): Promise<ProductCatalogItem[]> {
+  try {
+    const url = new URL(`${FASTAPI_URL}/api/products`);
+    if (brand) url.searchParams.set("brand", brand);
+    const res = await fetch(url, {
       cache: "no-store",
     });
     if (res.ok) {
@@ -403,53 +426,9 @@ export async function fetchCatalogProducts(): Promise<ProductCatalogItem[]> {
       }
     }
   } catch {
-    // API not reachable, use fallback catalog
+    // Keep the catalog empty when the backend is unavailable.
   }
-
-  return [
-    {
-      product_id: "B000063W3B",
-      product_name: "Toshiba Satellite 5105-S501 15-Inch Laptop",
-      review_count: 36,
-      brand: "💻 Laptops & Notebooks",
-    },
-    {
-      product_id: "SONY_WH1000XM4",
-      product_name: "Sony WH-1000XM4 Wireless Noise Cancelling Headphones",
-      review_count: 266,
-      brand: "🎧 Audio & Headphones",
-    },
-    {
-      product_id: "PS5_CONSOLE",
-      product_name: "Sony PlayStation 5 Console (Disc Edition)",
-      review_count: 271,
-      brand: "🎮 Gaming Consoles",
-    },
-    {
-      product_id: "APPLE_WATCH_S8",
-      product_name: "Apple Watch Series 8 (GPS, 45mm Aluminum)",
-      review_count: 261,
-      brand: "⌚ Smartwatches & Wearables",
-    },
-    {
-      product_id: "MOBEZF53HHFV6S8R",
-      product_name: "Samsung Galaxy J7 Prime (Black, 16 GB)",
-      review_count: 130,
-      brand: "📱 Smartphones & Mobiles",
-    },
-    {
-      product_id: "B00004Z5M1",
-      product_name: "KDS Valiant 6480IPT Notebook PC",
-      review_count: 24,
-      brand: "💻 Laptops & Notebooks",
-    },
-    {
-      product_id: "B00000J052",
-      product_name: "Kingston 64MB SDRAM Memory Module",
-      review_count: 18,
-      brand: "💾 Hardware Components",
-    },
-  ];
+  return [];
 }
 
 export async function fetchProductAudit(productId: string, query?: string): Promise<AuditData> {
@@ -469,26 +448,31 @@ export async function fetchProductAudit(productId: string, query?: string): Prom
       if (data && data.product_id) {
         return {
           ...data,
+          source: "live",
           product_name: data.product_name || `Hardware Device ${productId}`,
         };
       }
     }
+    if (res.status === 404) {
+      return unavailableAudit(productId, `Product ${productId} was not found in the catalog.`);
+    }
+    return unavailableAudit(productId, "The audit service could not analyze this product. Please try again.");
   } catch {
-    // Backend offline fallback
+    // Continue with a clearly labeled sample only when the live API is unreachable.
   }
 
-  // Check fallback cache
   const cached = FALLBACK_AUDITS[productId];
   if (cached) {
     return {
       product_id: productId,
+      source: "sample",
       product_name: cached.product_name || `Hardware Device ${productId}`,
       brand: cached.brand || "Consumer Electronics",
       review_count: cached.review_count || 20,
       rating_avg: cached.rating_avg || 4.0,
       summary: cached.summary || {
-        overview: "Verified review consensus generated via explainable RAG vector cluster.",
-        consensus_points: ["Evidence grounded synthesis across hardware aspects."],
+        overview: "Illustrative sample review consensus.",
+        consensus_points: ["Sample evidence across product aspects."],
       },
       alerts: cached.alerts || [],
       contested: cached.contested || [],
@@ -497,31 +481,28 @@ export async function fetchProductAudit(productId: string, query?: string): Prom
     };
   }
 
-  // Generic dynamic fallback
+  return unavailableAudit(
+    productId,
+    "The live audit service is unavailable. Start the FastAPI backend and try again.",
+  );
+}
+
+function unavailableAudit(productId: string, errorMessage: string): AuditData {
   return {
     product_id: productId,
-    product_name: `Hardware Unit ${productId}`,
-    brand: "Consumer Electronics",
-    review_count: 16,
-    rating_avg: 4.1,
+    product_name: `Product ${productId}`,
+    brand: "",
+    source: "unavailable",
+    error_message: errorMessage,
+    review_count: 0,
+    rating_avg: 0,
     summary: {
-      overview: `Explainable RAG synthesis for product ${productId}. Customer reviews indicate solid baseline reliability with standard lifecycle wear.`,
-      consensus_points: [
-        `Hardware specifications verified against ChromaDB vector index [Review #1].`,
-        `Build quality and industrial design rated positively across user feedback [Review #2].`,
-      ],
+      overview: "",
+      consensus_points: [],
     },
     alerts: [],
     contested: [],
     stats: [],
-    reviews: [
-      {
-        review_id: 1,
-        rating: 4,
-        date: "Verified Hardware Purchase",
-        review_text: `Reliable performance for the price point. Matches all listed hardware specifications.`,
-        helpful_votes: 6,
-      },
-    ],
+    reviews: [],
   };
 }

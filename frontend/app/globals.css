@@ -62,6 +62,124 @@
   --lime-dim: #8EA925;
   --crimson: #E10600;
   --crimson-glow: #FF332C;
+  --text-peach: #f1f1eb;
+  --text-muted: #b9bcb4;
+  --text-faint: #92968d;
+  --neon-lime: #b8c89b;
+  --neon-lime-subtle: rgba(184, 200, 155, 0.12);
+  --neon-lime-border: #59664c;
+  --amber-warn: #e1bc75;
+  --crimson-alert: #df8279;
+  --border-glass: #3a4037;
+  --border-subtle: #30342d;
+  --border-specular: #454b41;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}
+
+/* Plain components used by the review pages and contact flows. */
+.container {
+  width: min(1120px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.font-heading {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.glass-panel {
+  border: 1px solid #343831;
+  border-radius: 10px;
+  background: #151713;
+}
+
+.glass-panel-crimson {
+  border-color: #70433f;
+  background: #211715;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1px solid #3c4139;
+  border-radius: 5px;
+  background: #191c18;
+  color: #d1d4cc;
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.badge-neutral {
+  border-color: #3c4139;
+  color: #c1c4bc;
+}
+
+.badge-lime {
+  border-color: #59664c;
+  background: rgba(184, 200, 155, 0.1);
+  color: #c6d4ad;
+}
+
+.badge-amber {
+  border-color: #6a5940;
+  background: rgba(225, 188, 117, 0.08);
+  color: #e1bc75;
+}
+
+.badge-crimson {
+  border-color: #70433f;
+  background: rgba(223, 130, 121, 0.08);
+  color: #e8a29b;
+}
+
+.btn {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid #454b41;
+  border-radius: 6px;
+  color: #e7e8e2;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.btn:hover {
+  border-color: #77816d;
+}
+
+.btn-lime {
+  border-color: #c7d3ae;
+  background: #c7d3ae;
+  color: #1f2719;
+}
+
+.btn-lime:hover {
+  border-color: #dce7c8;
+  background: #dce7c8;
+}
+
+.form-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #454b41;
+  border-radius: 6px;
+  background: #10120f;
+  color: #f1f1eb;
+  font: inherit;
+}
+
+.form-input:focus-visible {
+  outline: 2px solid #b8c89b;
+  outline-offset: 2px;
 }
 
 /* Ambient Background Glow Mesh, Rings & Floating Gradient Ribbons */

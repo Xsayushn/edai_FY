@@ -4,8 +4,8 @@ import Script from "next/script";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://opinionlens.ai";
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-OPINIONLENS2026";
-const GSC_TOKEN = process.env.NEXT_PUBLIC_GSC_VERIFICATION || "opinionlens-gsc-verification-token-2026";
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GSC_TOKEN = process.env.NEXT_PUBLIC_GSC_VERIFICATION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s · OpinionLens",
   },
   description:
-    "Explainable and safe RAG framework for opinion summarization featuring Critical-Minority Safety Guard, Attributed Consensus, Polarization Spectra, and Live Evidence Inspector.",
+    "Summaries of product review themes, safety mentions, and differing opinions, with links to the source comments.",
   keywords: [
     "OpinionLens",
     "Explainable RAG",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "Sentiment Aggregation",
     "Hardware Review Audit",
   ],
-  authors: [{ name: "OpinionLens Engineering Team", url: SITE_URL }],
+  authors: [{ name: "OpinionLens", url: SITE_URL }],
   creator: "OpinionLens",
   publisher: "OpinionLens",
   alternates: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "OpinionLens",
     title: "OpinionLens — Explainable & Safe RAG for Opinion Summarization",
     description:
-      "Explainable and safe RAG framework for opinion summarization featuring Critical-Minority Safety Guard, Attributed Consensus, Polarization Spectra, and Live Evidence Inspector.",
+      "Summaries of product review themes, safety mentions, and differing opinions, with links to the source comments.",
     images: [
       {
         url: "/og-image.webp",
@@ -59,9 +59,7 @@ export const metadata: Metadata = {
     icon: "/logo.webp",
     apple: "/logo.webp",
   },
-  verification: {
-    google: GSC_TOKEN,
-  },
+  verification: GSC_TOKEN ? { google: GSC_TOKEN } : undefined,
   robots: {
     index: true,
     follow: true,
@@ -89,12 +87,8 @@ export default function RootLayout({
         name: "OpinionLens",
         url: SITE_URL,
         logo: `${SITE_URL}/logo.webp`,
-        description:
-          "Enterprise-grade explainable RAG engine and consumer safety audit system for hardware reviews.",
-        sameAs: [
-          "https://github.com/opinionlens",
-          "https://twitter.com/opinionlens",
-        ],
+        description: "Product review summaries with links to the source comments.",
+        sameAs: ["https://github.com/Xsayushn/edai_FY"],
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "Customer Support & Security Operations",
@@ -137,24 +131,26 @@ export default function RootLayout({
         />
 
         {/* Google Analytics (Requirement 17) */}
-        <Script
-          strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-        />
-        <Script
-          id="google-analytics-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${GA_ID}', {
-                page_path: window.location.pathname,
-              });
-            `,
-          }}
-        />
+        {GA_ID && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+            />
+            <Script
+              id="google-analytics-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){window.dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${GA_ID}', { page_path: window.location.pathname });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="bg-[#08090d] text-[#F9EAD7] font-sans antialiased min-h-screen relative overflow-x-hidden selection:bg-[#BFE23A] selection:text-black">
         {children}
@@ -165,14 +161,12 @@ export default function RootLayout({
             <div className="flex items-center gap-3">
               <span className="font-display font-bold text-sm text-[#F9EAD7]">OpinionLens</span>
               <span className="text-[#8E8880]">·</span>
-              <span>Explainable &amp; Safe RAG for Opinion Summarization</span>
+              <span>Product review summaries with source comments</span>
             </div>
             <div className="flex items-center gap-6">
               <Link href="/privacy" className="hover:text-[#BFE23A] transition-colors">Privacy Policy</Link>
-              <Link href="/contact" className="hover:text-[#BFE23A] transition-colors">Contact Ops</Link>
-              <Link href="/audit/B000063W3B" className="hover:text-[#BFE23A] transition-colors">Hardware Catalog</Link>
-              <a href="/sitemap.xml" className="hover:text-[#BFE23A] transition-colors">Sitemap</a>
-              <a href="/robots.txt" className="hover:text-[#BFE23A] transition-colors">Robots</a>
+              <Link href="/contact" className="hover:text-[#BFE23A] transition-colors">Contact</Link>
+              <Link href="/#product-id" className="hover:text-[#BFE23A] transition-colors">Find a product</Link>
             </div>
           </div>
         </footer>

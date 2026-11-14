@@ -8,9 +8,7 @@ import { SafetyGuardCard } from "./SafetyGuardCard";
 import { ConsensusCard } from "./ConsensusCard";
 import { PolarizationCard } from "./PolarizationCard";
 import { EvidenceInspector } from "./EvidenceInspector";
-import { RepoAuditModal } from "./RepoAuditModal";
 import { PRODUCT_DATASETS, REVIEWS_DATABASE } from "../data/opinionData";
-import { evaluateGitHubRepoEffects } from "../utils/auditComparison";
 
 export default function OpinionLensApp() {
   const [selectedBrandId, setSelectedBrandId] = useState("laptops");
@@ -18,9 +16,6 @@ export default function OpinionLensApp() {
   const [queryText, setQueryText] = useState("fanless thermal throttling, battery life, liquid retina");
   const [selectedReviewId, setSelectedReviewId] = useState("15");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
-
-  const auditResult = useMemo(() => evaluateGitHubRepoEffects(), []);
 
   // Retrieve current dataset and model
   const currentBrand = useMemo(() => {
@@ -55,7 +50,7 @@ export default function OpinionLensApp() {
     }
   };
 
-  // Handle review analysis simulation / backend trigger
+  // Replay the sample dashboard's loading state.
   const handleAnalyzeReviews = () => {
     setIsAnalyzing(true);
     setTimeout(() => {
@@ -73,10 +68,7 @@ export default function OpinionLensApp() {
       <AmbientBackground />
 
       {/* Top frosted liquid glass navigation bar */}
-      <Header
-        onOpenAuditModal={() => setIsAuditModalOpen(true)}
-        auditScore={auditResult.overallScore}
-      />
+      <Header />
 
       {/* Query & Retrieval parameter strip with live execution telemetry */}
       <QueryStrip
@@ -89,8 +81,7 @@ export default function OpinionLensApp() {
         onQueryChange={setQueryText}
         onAnalyze={handleAnalyzeReviews}
         isAnalyzing={isAnalyzing}
-        latencyText={currentModel.latency}
-        totalVectors={currentModel.totalReviews}
+        totalReviews={currentModel.totalReviews}
       />
 
       {/* Main Canvas: Two-Panel 60% / 40% Architecture */}
@@ -130,11 +121,6 @@ export default function OpinionLensApp() {
         </div>
       </div>
 
-      {/* GitHub Repo Diagnostic Audit Modal */}
-      <RepoAuditModal
-        isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
-      />
     </div>
   );
 }

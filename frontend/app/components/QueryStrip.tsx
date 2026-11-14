@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import { ProductDataset } from '../types/opinionLens';
 
 interface QueryStripProps {
@@ -11,8 +12,7 @@ interface QueryStripProps {
   onQueryChange: (query: string) => void;
   onAnalyze: () => void;
   isAnalyzing: boolean;
-  latencyText: string;
-  totalVectors: number;
+  totalReviews: number;
 }
 
 export const QueryStrip: React.FC<QueryStripProps> = ({
@@ -25,18 +25,9 @@ export const QueryStrip: React.FC<QueryStripProps> = ({
   onQueryChange,
   onAnalyze,
   isAnalyzing,
-  latencyText,
-  totalVectors,
+  totalReviews,
 }) => {
-  const [isReindexing, setIsReindexing] = useState(false);
   const currentBrand = datasets.find((d) => d.brandId === selectedBrandId) || datasets[0];
-
-  const handleReindex = () => {
-    setIsReindexing(true);
-    setTimeout(() => {
-      setIsReindexing(false);
-    }, 800);
-  };
 
   return (
     <section className="relative z-10 frosted-glass-panel border-b border-white/15 px-4 md:px-8 py-4 backdrop-blur-2xl">
@@ -111,23 +102,8 @@ export const QueryStrip: React.FC<QueryStripProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Sample dashboard action */}
         <div className="flex items-center gap-2.5 self-end xl:self-center pt-1">
-          <button
-            onClick={handleReindex}
-            disabled={isReindexing}
-            className="group px-3.5 py-2 rounded-xl glass-pill-surface text-[#F9EAD7]/90 hover:text-white hover:border-white/40 transition-all text-xs font-semibold flex items-center gap-1.5 active:scale-95 cursor-pointer disabled:opacity-60"
-            title="Re-embed & index ChromaDB vectorstore"
-          >
-            <span
-              className={`material-symbols-outlined text-base transition-transform duration-500 ${
-                isReindexing ? 'animate-spin text-[#BFE23A]' : 'group-hover:rotate-180'
-              }`}
-            >
-              refresh
-            </span>
-            <span>{isReindexing ? 'Indexing...' : 'Re-Index'}</span>
-          </button>
           <button
             id="analyzeBtn"
             onClick={onAnalyze}
@@ -137,43 +113,31 @@ export const QueryStrip: React.FC<QueryStripProps> = ({
             {isAnalyzing ? (
               <>
                 <span className="material-symbols-outlined text-base animate-spin">sync</span>
-                <span>Synthesizing ChromaDB...</span>
+                <span>Loading sample...</span>
               </>
             ) : (
               <>
                 <span className="material-symbols-outlined text-base font-bold transition-transform duration-300 group-hover:scale-110">
                   auto_awesome
                 </span>
-                <span>Analyze Reviews</span>
+                <span>Replay Sample</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Live Execution Status Bar with Liquid Frosted Underline */}
+      {/* Sample data status */}
       <div className="max-w-[1536px] mx-auto mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center justify-between text-xs font-mono text-[#F9EAD7]/70 gap-2">
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#BFE23A] shadow-[0_0_10px_#BFE23A]" />
-            VectorStore: <strong className="text-white font-semibold">ChromaDB ({totalVectors} vectors)</strong>
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-sm text-[#BFE23A]">bolt</span>
-            Inference Engine: <strong className="text-white font-semibold">Groq LPU (qwen/qwen3.8-27b)</strong>
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-sm text-[#F9EAD7]">hub</span>
-            Embedder: <strong className="text-white font-semibold">BAAI/bge-small-en-v1.5</strong>
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-0.5 rounded-full glass-pill-surface border border-[#BFE23A]/30 text-[#F9EAD7] text-[11px] shadow-[0_0_12px_rgba(191,226,58,0.15)] transition-all duration-300 hover:border-[#BFE23A]/60">
-            Latency: <span className="text-[#BFE23A] font-bold">{latencyText}</span> (Groq Cached)
-          </span>
-        </div>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#BFE23A] shadow-[0_0_10px_#BFE23A]" />
+          Sample dashboard: <strong className="text-white font-semibold">{currentBrand.brandName}</strong>
+          <span className="text-white/40">·</span>
+          {totalReviews} example reviews
+        </span>
+        <Link href="/audit/MOBE7JXXKS6PWW2C" className="text-[#BFE23A] hover:text-white transition-colors">
+          Open live Lenovo audit →
+        </Link>
       </div>
     </section>
   );

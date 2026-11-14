@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import ProductAuditSearch from "../../components/ProductAuditSearch";
 import { fetchProductAudit } from "../../lib/api";
-
-import DeviceSearchBox from "../../components/DeviceSearchBox";
 
 interface PageProps {
   params: Promise<{
@@ -14,14 +13,12 @@ interface PageProps {
   }>;
 }
 
-export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { productId } = await params;
-  const sp = searchParams ? await searchParams : {};
-  const audit = await fetchProductAudit(productId, sp.q);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://opinionlens.ai";
 
-  const title = `Audit: ${audit.product_name || productId} · Safety & Consensus`;
-  const description = `Read explainable RAG review audit for ${audit.product_name || productId}. ${audit.review_count} verified reviews analyzed with ${audit.alerts.length} critical safety alerts.`;
+  const title = `Product Review Audit · ${productId}`;
+  const description = `Explore review evidence, safety signals, and differing opinions for product ${productId}.`;
 
   return {
     title,
@@ -38,7 +35,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
           url: "/og-image.webp",
           width: 1200,
           height: 630,
-          alt: `OpinionLens Audit Report for ${audit.product_name || productId}`,
+          alt: `OpinionLens Product Review Audit for ${productId}`,
         },
       ],
     },
@@ -57,6 +54,26 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
   const query = sp.q || "";
   const audit = await fetchProductAudit(productId, query);
 
+  if (audit.source === "unavailable") {
+    return (
+      <div className="container" style={{ paddingTop: "20px", paddingBottom: "100px" }}>
+        <Breadcrumbs items={[{ label: "Hardware Catalog", href: "/#catalog" }, { label: "Audit unavailable" }]} />
+        <div style={{ marginTop: "24px", marginBottom: "28px" }}>
+          <ProductAuditSearch brands={[]} products={[]} initialProductId={productId} initialQuestion={query} />
+        </div>
+        <section className="glass-panel" role="status" style={{ padding: "32px", maxWidth: "760px", margin: "0 auto" }}>
+          <h1 className="font-heading" style={{ fontSize: "1.7rem", color: "var(--text-peach)", marginBottom: "12px" }}>
+            Live audit unavailable
+          </h1>
+          <p style={{ color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "20px" }}>
+            {audit.error_message}
+          </p>
+          <Link href="/" className="btn btn-lime">Back to OpinionLens</Link>
+        </section>
+      </div>
+    );
+  }
+
   const hasCriticalRisks = audit.alerts && audit.alerts.length > 0;
 
   return (
@@ -71,11 +88,21 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
 
       {/* Switch Device & Ask Question Bar */}
       <div style={{ marginTop: "16px", marginBottom: "28px" }}>
-        <DeviceSearchBox
-          currentProductId={productId}
-          placeholder="Switch to another device or ask aspect (e.g. heating, battery, noise)..."
-        />
+        <ProductAuditSearch brands={[]} products={[]} initialProductId={productId} initialQuestion={query} />
       </div>
+
+      {audit.source === "sample" && (
+        <section
+          role="note"
+          className="glass-panel"
+          style={{ padding: "14px 18px", marginBottom: "24px", border: "1px solid var(--amber-border, rgba(255, 190, 80, 0.45))" }}
+        >
+          <strong style={{ color: "var(--amber-warn)" }}>Sample audit data</strong>
+          <span style={{ color: "var(--text-muted)", marginLeft: "8px" }}>
+            The live API is unreachable. These illustrative findings and quotes are not a live product audit or query-filtered result.
+          </span>
+        </section>
+      )}
 
       {query && (
         <div
@@ -90,16 +117,16 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
             gap: "10px",
           }}
         >
-          <span style={{ fontSize: "1.1rem" }}>🔍</span>
+          <span aria-hidden="true" style={{ color: "var(--text-faint)" }}>Search:</span>
           <span style={{ color: "var(--text-peach)", fontSize: "0.92rem" }}>
-            Showing opinion consensus focused on query: <strong>&ldquo;{query}&rdquo;</strong>
+            {audit.source === "sample" ? "Sample query:" : "Showing opinion consensus focused on query:"} <strong>&ldquo;{query}&rdquo;</strong>
           </span>
           <Link
             href={`/audit/${productId}`}
             className="badge badge-neutral"
             style={{ marginLeft: "auto", fontSize: "0.75rem" }}
           >
-            Clear Filter ✕
+            Clear search
           </Link>
         </div>
       )}
@@ -107,10 +134,10 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
       {/* Audit Header */}
       <div style={{ marginTop: "24px", marginBottom: "36px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
-          <span className="badge badge-neutral">ASIN: {productId}</span>
+          <span className="badge badge-neutral">Product ID: {productId}</span>
           <span className="badge badge-lime">{audit.brand}</span>
-          <span className="badge badge-neutral">{audit.review_count} Verified Customer Reviews</span>
-          <span className="badge badge-neutral">⭐ {audit.rating_avg} / 5.0 Rating</span>
+          <span className="badge badge-neutral">{audit.review_count} {audit.source === "sample" ? "sample reviews" : "reviews analyzed"}</span>
+          <span className="badge badge-neutral">⭐ {audit.rating_avg} / 5.0 average in this set</span>
         </div>
 
         {/* Requirement 6: Exactly one H1 per page */}
@@ -127,7 +154,7 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         </h1>
 
         <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: "860px" }}>
-          Deep-evidence synthesis powered by Sentence-Transformers vector clustering in ChromaDB with critical-minority safety guardrails.
+            Review themes, safety signals, and dissenting opinions from the analyzed review set.
         </p>
       </div>
 
@@ -143,21 +170,20 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <span style={{ fontSize: "1.4rem" }}>🚨</span>
             <h2
               id="safety-guard-heading"
               className="font-heading"
               style={{ fontSize: "1.35rem", color: "#ff5450", margin: 0 }}
             >
-              Critical-Minority Safety Hazard Detected
+              Safety mentions
             </h2>
             <span className="badge badge-crimson" style={{ marginLeft: "auto" }}>
-              HIGH PRIORITY INTERCEPTION
+              Review these comments
             </span>
           </div>
 
           <p style={{ color: "var(--text-peach)", fontSize: "0.95rem", marginBottom: "16px", lineHeight: 1.6 }}>
-            Despite positive overall ratings, our critical safety guard intercepted verified reports of acute hardware danger. These hazards represent low-frequency but catastrophic failure modes.
+            Safety signals appeared in the analyzed reviews. Read the quoted reports in context before drawing conclusions.
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -173,10 +199,10 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                   <strong style={{ color: "#ff8280", textTransform: "uppercase", fontSize: "0.85rem", letterSpacing: "0.04em" }}>
-                    Hazard Type: {alert.risk_term}
+                    Potential risk: {alert.risk_term}
                   </strong>
                   <span style={{ fontSize: "0.8rem", color: "var(--text-faint)" }}>
-                    {alert.matching_reviews} reviews affected
+                    Mentioned in {alert.matching_reviews} reviews
                   </span>
                 </div>
                 {alert.quotes.map((quote, qIdx) => (
@@ -210,17 +236,18 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
             gap: "14px",
           }}
         >
-          <span style={{ fontSize: "1.3rem" }}>🛡️</span>
           <div>
             <h2
               id="safety-guard-heading"
               className="font-heading"
               style={{ fontSize: "1.05rem", color: "var(--neon-lime)", margin: 0 }}
             >
-              No Acute Safety Hazards Intercepted
+              {audit.review_count === 0 ? "Safety not assessed" : "No safety mentions found"}
             </h2>
             <p style={{ color: "var(--text-muted)", fontSize: "0.86rem", margin: 0 }}>
-              Zero critical thermal runaway, electrical fire, or structural shatter incidents detected across the indexed corpus.
+              {audit.review_count === 0
+                ? "No reviews were retrieved, so safety signals could not be assessed."
+                : "No matching safety terms were found in this review set. This does not rule out issues in reviews that were not analyzed."}
             </p>
           </div>
         </section>
@@ -232,9 +259,11 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         <section aria-labelledby="consensus-heading" className="glass-panel" style={{ padding: "32px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
             <h2 id="consensus-heading" className="font-heading" style={{ fontSize: "1.4rem", color: "var(--text-peach)" }}>
-              Attributed Consensus Synthesis
+              What reviewers say
             </h2>
-            <span className="badge badge-lime">100% Evidence Grounded</span>
+            <span className={`badge ${audit.source === "sample" ? "badge-amber" : "badge-lime"}`}>
+              {audit.source === "sample" ? "Sample citations" : "Citations included"}
+            </span>
           </div>
 
           <p style={{ color: "var(--text-peach)", fontSize: "1.02rem", lineHeight: 1.7, marginBottom: "24px" }}>
@@ -245,7 +274,7 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
             className="font-heading"
             style={{ fontSize: "1rem", color: "var(--text-muted)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.04em" }}
           >
-            Verified Consensus Findings
+            Consensus Findings
           </h3>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "14px" }}>
             {audit.summary.consensus_points.map((point, idx) => (
@@ -292,18 +321,18 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         <section aria-labelledby="contested-heading" className="glass-panel" style={{ padding: "32px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
             <h2 id="contested-heading" className="font-heading" style={{ fontSize: "1.4rem", color: "var(--text-peach)" }}>
-              Polarized Contention Radar
+              Where opinions differ
             </h2>
-            <span className="badge badge-amber">Contested Sentiment</span>
+            <span className="badge badge-amber">Mixed opinions</span>
           </div>
 
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "20px", lineHeight: 1.6 }}>
-            Aspects where consumer opinion splits closest to 50/50, indicating variable manufacturing tolerances or divided user expectations.
+            Topics with both positive and negative comments in the reviews analyzed.
           </p>
 
           {audit.contested.length === 0 ? (
             <p style={{ color: "var(--text-faint)", fontStyle: "italic", fontSize: "0.9rem" }}>
-              No high-polarity contention detected. Sentiment remains homogeneous across all extracted aspects.
+              No aspect met the current threshold for a contested label in this review set.
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -320,13 +349,13 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <strong style={{ color: "var(--text-peach)", fontSize: "0.92rem" }}>{item.aspect}</strong>
                     <span className="badge badge-amber" style={{ fontSize: "0.72rem" }}>
-                      Polarity Index: {item.ratio}
+                      Mixed feedback
                     </span>
                   </div>
 
                   <div style={{ display: "flex", gap: "10px", fontSize: "0.82rem", marginBottom: "10px" }}>
-                    <span style={{ color: "var(--neon-lime)" }}>👍 {item.pos_count} Positive</span>
-                    <span style={{ color: "#ff6b68" }}>👎 {item.neg_count} Negative</span>
+                    <span style={{ color: "var(--neon-lime)" }}>{item.pos_count} positive</span>
+                    <span style={{ color: "#e8a29b" }}>{item.neg_count} negative</span>
                   </div>
 
                   {item.sample_positive && (
@@ -347,14 +376,14 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         </section>
       </div>
 
-      {/* Raw Verified Reviews Corpus (Evidence Inspection) */}
+      {/* Retrieved Reviews (Evidence Inspection) */}
       <section aria-labelledby="raw-reviews-heading" style={{ marginBottom: "60px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h2 id="raw-reviews-heading" className="font-heading" style={{ fontSize: "1.5rem", color: "var(--text-peach)" }}>
-            Ground Truth Review Corpus (Citations Source)
+            <h2 id="raw-reviews-heading" className="font-heading" style={{ fontSize: "1.5rem", color: "var(--text-peach)" }}>
+            Review Evidence
           </h2>
           <span style={{ color: "var(--text-faint)", fontSize: "0.88rem" }}>
-            Showing verified customer purchases indexed in ChromaDB
+            Excerpts from the reviews analyzed for this audit
           </span>
         </div>
 
@@ -373,8 +402,10 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                   <span style={{ color: "var(--amber-warn)", letterSpacing: "2px", fontSize: "0.9rem" }}>
-                    {"★".repeat(Math.min(5, Math.max(1, Math.round(rev.rating))))}
-                    {"☆".repeat(5 - Math.min(5, Math.max(1, Math.round(rev.rating))))}
+                    <span aria-label={`${rev.rating} out of 5 stars`}>
+                      {"★".repeat(Math.min(5, Math.max(1, Math.round(rev.rating))))}
+                      {"☆".repeat(5 - Math.min(5, Math.max(1, Math.round(rev.rating))))}
+                    </span>
                   </span>
                   <span className="badge badge-neutral" style={{ fontSize: "0.72rem" }}>
                     Ref #{rev.review_id}
@@ -398,7 +429,7 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         </div>
       </section>
 
-      {/* Internal Navigation & Related Audits (Requirement 16) */}
+      {/* Continue exploring the live catalog */}
       <section
         className="glass-panel"
         style={{
@@ -412,22 +443,16 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
       >
         <div>
           <h3 className="font-heading" style={{ fontSize: "1.3rem", color: "var(--text-peach)", marginBottom: "8px" }}>
-            Explore More Hardware Audits
+            Review another product
           </h3>
           <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", maxWidth: "560px" }}>
-            Compare evidence-backed RAG sentiment profiles across enterprise notebooks, RAM upgrades, and mobile devices.
+            Choose another product from the catalog or enter its product ID.
           </p>
         </div>
 
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <Link href="/audit/B00004Z5M1" className="btn btn-glass">
-            Audit KDS Valiant
-          </Link>
-          <Link href="/audit/B00000J052" className="btn btn-glass">
-            Audit Kingston RAM
-          </Link>
-          <Link href="/contact" className="btn btn-lime">
-            Request Custom ASIN Audit
+          <Link href="/" className="btn btn-lime">
+            Find a product
           </Link>
         </div>
       </section>
