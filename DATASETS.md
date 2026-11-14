@@ -10,6 +10,14 @@ These datasets are included directly in the `dataset/` directory, pre-trained, a
 
 | Dataset | Category | Source & Benchmark | Flagship Models & Aspect Benchmarks |
 |---|---|---|---|
+| **`dataset/cpsc_safety_incidents.csv`** | Consumer Safety & Hardware Recalls | [CPSC SaferProducts.gov](https://www.saferproducts.gov/) (10,089 real incident reports) | • Ground truth evaluation dataset for OpinionLens **Critical-Minority Safety Guard**.<br>• Covers real fire hazards, battery explosions, burns, electrical shocks, child safety risks. |
+| **`dataset/mams_aspects.csv`** | Multi-Aspect Multi-Sentiment Suite | [MAMS ABSA Benchmark](https://github.com/siat-nlp/MAMS-for-ABSA) (4,297 sentences) | • Benchmark dataset where every sentence contains multiple conflicting aspects.<br>• Evaluates OpinionLens's **Contested Viewpoint Detection** algorithm (`CONTESTED_MIN_RATIO = 0.20`). |
+| **`dataset/semeval_laptops.csv`** | Laptop Hardware ABSA Benchmark | [SemEval-2014 Task 4](https://huggingface.co/datasets/tomaarsen/setfit-absa-semeval-laptops) (1,479 reviews) | • Human-annotated laptop aspect targets (`screen`, `battery`, `keyboard`, `OS`, `performance`) with ground-truth polarities. |
+| **`dataset/fake_reviews_benchmark.csv`** | Deceptive & AI Opinion Spam | [Fake Reviews Benchmark](https://huggingface.co/datasets/debojit01/fake-review-dataset) (1,000 reviews) | • Real vs. computer-generated (CG) fake reviews across home, kitchen, and electronics.<br>• Validates OpinionLens detection of counterfeit goods and promotional spam. |
+| **`dataset/tablets_ereaders.csv`** | Tablets & E-Readers | Modern Tech Hardware Corpus | • **Apple iPad Pro 12.9 M2** (`IPAD_PRO_M2`): Liquid Retina XDR display, Apple Pencil hover, iPadOS multitasking, USB-C port sparking.<br>• **Amazon Kindle Paperwhite 11** (`KINDLE_PAPERWHITE_11`): 300 ppi glare-free warm light, 10-week battery, UI responsiveness, wireless charging pad heat. |
+| **`dataset/pc_gaming_laptops.csv`** | PC Gaming Laptops & Creators | High-TDP Hardware Corpus | • **ASUS ROG Zephyrus G14** (`ASUS_ROG_G14`): 3K 120Hz OLED, Ryzen 9 / RTX 4070, fan coil whine, keyboard deck heat, 240W power brick scorch.<br>• **HP Omen 16** (`HP_OMEN_16`): Intel i7-14700HX / RTX 4060, 240Hz QHD display, screen wobble, battery swelling trackpad displacement. |
+| **`dataset/bose_audio.csv`** | Premium ANC Headphones | Acoustic Hardware ABSA Corpus | • **Bose QuietComfort 45** (`BOSE_QC45`): Class-leading flight ANC, plush ear cushions, wind noise buffeting, earcup lithium battery overheating hazard. |
+| **`dataset/smart_appliances.csv`** | Smart Kitchen Appliances | Connected Home Hardware Corpus | • **Instant Pot Duo Plus** (`INSTANT_POT_DUO`): 9-in-1 multi-cooker, stainless pot, food burn sensor halts, steam release valve spray burns.<br>• **Ninja Air Fryer Max XL** (`NINJA_AIR_FRYER`): 450F Max Crisp, basket ceramic coating peel, plastic burning smell, heavy power cord melting outlet. |
 | **`dataset/laptops.csv`** | High-Performance Laptops | [SemEval-2016 Task 5](https://alt.qcri.org/semeval2016/task5/) & Tech Reviews | • **Apple MacBook Air M2** (`MACBOOK_AIR_M2`): Fanless thermal throttling, Liquid Retina display, MagSafe charger sparks, keyboard feel.<br>• **Dell XPS 15 9530** (`DELL_XPS_15`): 3.5K OLED touchscreen, RTX 4060 creative workflows, fan noise, 130W charger brick heat, trackpad lift.<br>• **Lenovo ThinkPad X1 Carbon Gen 11** (`THINKPAD_X1_CARBON`): Legendary tactile keyboard, matte anti-glare screen, TrackPoint, Thunderbolt port electrical spark risk. |
 | **`dataset/audio_headphones.csv`** | Wireless Audio & ANC Headphones | Acoustic Hardware ABSA Corpus | • **Sony WH-1000XM4** (`SONY_WH1000XM4`): Active Noise Cancellation (ANC), LDAC high-res audio, 30-hour battery, muffled Zoom call mic, ear cup battery overheating.<br>• **Apple AirPods Pro 2** (`AIRPODS_PRO_2`): Adaptive Transparency, spatial audio, ear tip pressure headache, MagSafe case overheating/smoking, silicone ear rash. |
 | **`dataset/smartwatches.csv`** | Smartwatches & Health Wearables | Wearable Sensor & Health Benchmarks | • **Apple Watch Series 8** (`APPLE_WATCH_S8`): Always-On Retina display, ECG/Crash detection, 18-hr daily battery debate, optical sensor skin burn/blister, swollen battery screen popping.<br>• **Samsung Galaxy Watch 5** (`GALAXY_WATCH_5`): Sapphire crystal scratch resistance, BIA body composition, non-Samsung phone ECG restrictions, wireless charging puck overheating. |
@@ -107,3 +115,48 @@ Save your CSV file into `dataset/my_dataset.csv`, then run:
 python ingest.py --csv my_dataset.csv --product_id MY_PRODUCT_01 --max_reviews 200
 ```
 OpinionLens will compute embeddings on CPU/GPU and cache the vector collection in `chroma_db/` for millisecond-speed retrieval.
+
+---
+
+## 5. Mega-Scale Corpora for Universal Product Coverage (100M+ Reviews)
+
+To ensure a user is **never disappointed by missing their specific product or gadget** (MacBooks, ThinkPads, ROG gaming laptops, iPhones, Galaxy flagships, Pixel devices, AirPods, Sony ANC headphones, Bose, Steam Deck, PS5, Xbox, smart home IoT, wearables, and appliances), the following massive open corpora provide 100% relatable real-world coverage:
+
+### 🚀 Mega Corpus 1: McAuley-Lab Amazon Reviews 2023 (571 Million Reviews)
+- **Source:** [Hugging Face `McAuley-Lab/Amazon-Reviews-2023`](https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023)
+- **Scale:** 571.43 Million customer reviews across 33 product categories; tens of millions of distinct products (ASINs).
+- **Relatable Subsets for OpinionLens:**
+  - `raw_review_Computers` (20M+ reviews): Laptops, GPUs, SSDs, monitors, RAM, keyboards.
+  - `raw_review_Electronics` (43M+ reviews): Audio, headphones, cameras, TV, charging gear.
+  - `raw_review_Cell_Phones_and_Accessories` (35M+ reviews): All smartphone generations & accessories.
+  - `raw_review_Video_Games` (13M+ reviews): Consoles (PS5, Xbox, Switch), handhelds (Steam Deck), controllers.
+  - `raw_review_Appliances` (2.5M+ reviews): Air fryers, robot vacuums, microwaves, kitchen IoT.
+- **Direct Schema Mapping:**
+  - `text` -> `review_text`
+  - `rating` -> `rating`
+  - `parent_asin` / `asin` -> `product_id`
+  - `title` -> `review_title`
+  - `user_id` -> `reviewer_id`
+  - `helpful_vote` -> `helpful_votes`
+  - `timestamp` -> `date`
+
+### 📦 Mega Corpus 2: Amazon Customer Reviews on AWS Open Data (130+ Million Reviews)
+- **Source:** [AWS Open Data Registry `amazon-reviews-pds`](https://registry.opendata.aws/amazon-reviews/)
+- **Access:** Direct public S3 / HTTPS GZipped TSV files (no API key required).
+- **Key Files:**
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_PC_v1_00.tsv.gz` (6.9M reviews)
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Wireless_v1_00.tsv.gz` (9.0M reviews)
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Electronics_v1_00.tsv.gz` (3.1M reviews)
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Video_Games_v1_00.tsv.gz` (1.8M reviews)
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Watches_v1_00.tsv.gz` (960K reviews)
+  - `https://s3.amazonaws.com/amazon-reviews-pds/tsv/amazon_reviews_us_Major_Appliances_v1_00.tsv.gz` (96K reviews)
+
+### 🚨 Mega Corpus 3: CPSC Public Product Safety Incidents & Recalls
+- **Source:** [SaferProducts.gov](https://www.saferproducts.gov/) / CPSC Public Data Export
+- **Scale:** 50,000+ consumer incident reports detailing safety hazards (battery fire, burn, overheating, electric shock).
+- **Purpose:** Primary evaluation dataset for OpinionLens's Critical-Minority Safety Guard.
+
+### 🎮 Mega Corpus 4: Steam Game & Handheld Hardware Reviews
+- **Source:** [Hugging Face `steam_reviews`](https://huggingface.co/datasets/steam_reviews) / Kaggle
+- **Scale:** 21+ Million reviews.
+- **Relatability:** Real-world performance feedback on hardware handhelds (Steam Deck, ROG Ally) and games. Contains framerate drops, crashes, thermal stuttering, and controller mapping feedback.

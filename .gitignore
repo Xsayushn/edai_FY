@@ -10,6 +10,7 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+.pip-cache/
 
 # ── Virtual environments ───────────────────────────────────────────────
 .venv/

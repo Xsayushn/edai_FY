@@ -106,7 +106,77 @@ TARGETS = [
         "max_reviews": 150,
     },
 
-    # 7. Mobile Smartphones (Flipkart / Mendeley Baseline)
+    # 7. Tablets & E-Readers
+    {
+        "name": "Apple iPad Pro 12.9 M2 (Liquid Retina XDR)",
+        "csv": DATASET_DIR / "tablets_ereaders.csv",
+        "product_id": "IPAD_PRO_M2",
+        "max_reviews": 150,
+    },
+    {
+        "name": "Amazon Kindle Paperwhite 11th Gen (32GB)",
+        "csv": DATASET_DIR / "tablets_ereaders.csv",
+        "product_id": "KINDLE_PAPERWHITE_11",
+        "max_reviews": 150,
+    },
+
+    # 8. PC Gaming Laptops
+    {
+        "name": "ASUS ROG Zephyrus G14 (RTX 4070, OLED)",
+        "csv": DATASET_DIR / "pc_gaming_laptops.csv",
+        "product_id": "ASUS_ROG_G14",
+        "max_reviews": 150,
+    },
+    {
+        "name": "HP Omen 16 (i7-14700HX, RTX 4060)",
+        "csv": DATASET_DIR / "pc_gaming_laptops.csv",
+        "product_id": "HP_OMEN_16",
+        "max_reviews": 150,
+    },
+
+    # 9. Bose Audio
+    {
+        "name": "Bose QuietComfort 45 Bluetooth Headphones",
+        "csv": DATASET_DIR / "bose_audio.csv",
+        "product_id": "BOSE_QC45",
+        "max_reviews": 150,
+    },
+
+    # 10. Smart Appliances
+    {
+        "name": "Instant Pot Duo Plus 9-in-1 Pressure Cooker",
+        "csv": DATASET_DIR / "smart_appliances.csv",
+        "product_id": "INSTANT_POT_DUO",
+        "max_reviews": 150,
+    },
+    {
+        "name": "Ninja Air Fryer Max XL (5.5 Qt)",
+        "csv": DATASET_DIR / "smart_appliances.csv",
+        "product_id": "NINJA_AIR_FRYER",
+        "max_reviews": 150,
+    },
+
+    # 11. Benchmarks & Academic Datasets
+    {
+        "name": "SemEval-2014 Laptop ABSA Benchmark",
+        "csv": DATASET_DIR / "semeval_laptops.csv",
+        "product_id": "SEMEVAL_LAPTOP_BENCHMARK",
+        "max_reviews": 250,
+    },
+    {
+        "name": "MAMS Multi-Aspect Multi-Sentiment Suite",
+        "csv": DATASET_DIR / "mams_aspects.csv",
+        "product_id": "MAMS_CONTESTED_BENCHMARK",
+        "max_reviews": 250,
+    },
+    {
+        "name": "Fake & Deceptive Review Benchmark",
+        "csv": DATASET_DIR / "fake_reviews_benchmark.csv",
+        "product_id": "AMAZON_SYNTHETIC_BENCHMARK",
+        "max_reviews": 250,
+    },
+
+    # 12. Mobile Smartphones (Flipkart / Mendeley Baseline)
     {
         "name": "Samsung Galaxy J7 Prime",
         "csv": DATASET_DIR / "samsung.csv",
