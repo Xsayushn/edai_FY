@@ -213,7 +213,10 @@ def run_audit(req: AuditRequest):
     # 2. Retrieval
     query_str = (req.query or "").strip()
     try:
-        reviews = retrieve_opinions(pid, query_str if query_str else None)
+        if query_str:
+            reviews = retrieve_opinions(pid, query_str)
+        else:
+            reviews = retrieve_opinions(pid, "", mode="balanced")
     except Exception as e:
         logger.error(f"Retrieval error: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
