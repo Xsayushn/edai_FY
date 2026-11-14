@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import ProductAuditSearch from "../../components/ProductAuditSearch";
+import ReviewChat from "../../components/ReviewChat";
 import { fetchProductAudit } from "../../lib/api";
 
 interface PageProps {
@@ -376,6 +377,8 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         </section>
       </div>
 
+      <ReviewChat productId={productId} />
+
       {/* Retrieved Reviews (Evidence Inspection) */}
       <section aria-labelledby="raw-reviews-heading" style={{ marginBottom: "60px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
@@ -388,9 +391,10 @@ export default async function AuditPage({ params, searchParams }: PageProps) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "20px" }}>
-          {audit.reviews.slice(0, 6).map((rev) => (
+          {audit.reviews.map((rev) => (
             <article
               key={rev.review_id}
+              id={`review-${rev.review_id}`}
               className="glass-panel"
               style={{
                 padding: "22px 24px",
